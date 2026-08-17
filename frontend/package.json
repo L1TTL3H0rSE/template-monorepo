@@ -17,7 +17,9 @@
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "test": "pnpm -r --if-present test",
+    "perf:bundle": "pnpm build && node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt",
+    "perf:bundle:json": "node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt --json"
   },
   "devDependencies": {
     "typescript": "catalog:"

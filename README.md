@@ -1,4 +1,4 @@
-# roleplay-website
+# template-monorepo
 
 Шаблон проекта: Go-бэкенд, pnpm-workspace фронтенда, дизайн-система со Storybook
 и Nuxt-приложение.

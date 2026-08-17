@@ -4,7 +4,7 @@
   "sourceIdentity": {
     "displayName": "Roleplay",
     "slug": "roleplay",
-    "repositoryName": "roleplay-website",
+    "repositoryName": "template-monorepo",
     "npmScope": "@roleplay",
     "goModulePrefix": "roleplay"
   },

@@ -7,7 +7,12 @@
 //     --npm-scope @acme \
 //     --go-module-prefix github.com/acme/acme-platform
 //
-// Флаги: --dry-run (ничего не менять), --force (разрешить грязное дерево).
+// Флаги:
+//   --dry-run  ничего не менять, показать список файлов и категории замен;
+//   --force    разрешить грязное рабочее дерево (и только это).
+//
+// Повторная инициализация запрещена всегда и флагом не снимается — см.
+// assertNotInitialized.
 //
 // Скрипт заменяет ТОЛЬКО идентичность проекта. Демонстрационные домены
 // (gotemplate, example, character) остаются рабочим кодом: они удаляются
@@ -32,7 +37,7 @@ function main() {
   const options = parseArguments(process.argv.slice(2));
   const metadata = readTemplateMetadata(ROOT);
 
-  assertNotInitialized(metadata, options);
+  assertNotInitialized(metadata);
   assertCleanWorkingTree(options);
 
   const target = validateIdentity(options);
@@ -153,17 +158,32 @@ function validateIdentity(options) {
   };
 }
 
-function assertNotInitialized(metadata, options) {
+/**
+ * Повторная инициализация запрещена ВСЕГДА — её не снимает даже `--force`.
+ *
+ * Причина не в осторожности, а в том, что вторая инициализация не может
+ * сработать правильно по построению:
+ *
+ *  1. Замены строятся из `sourceIdentity`, то есть из идентичности ШАБЛОНА.
+ *     После первой инициализации исходных токенов в дереве уже нет, поэтому
+ *     второй запуск ничего не переименует — но запишет новую идентичность в
+ *     метаданные. Результат: файлы говорят «Acme», метаданные — «Beta».
+ *  2. Проверка остатков этого не заметит: она тоже ищет только исходные токены.
+ *  3. `splitProjectMemory()` выполнит `PROJECT_MEMORY -> TEMPLATE_MEMORY`
+ *     повторно и затрёт унаследованную память уже накопленной памятью проекта.
+ *
+ * Переименование существующего проекта — отдельная задача с другой семантикой,
+ * и делать её наполовину хуже, чем не делать вовсе.
+ */
+function assertNotInitialized(metadata) {
   if (!metadata.initialized) return;
-  if (options.force) {
-    console.warn("предупреждение: повторная инициализация под --force");
-    return;
-  }
 
   fail(
-    `${TEMPLATE_METADATA_FILE}: initialized уже true. ` +
-      "Повторная инициализация переписала бы уже принадлежащую проекту идентичность. " +
-      "Используйте --force осознанно.",
+    `${TEMPLATE_METADATA_FILE}: initialized уже true.\n` +
+      "Повторная инициализация не поддерживается и не снимается флагом --force: " +
+      "замены строятся из идентичности шаблона, которой в дереве уже нет, " +
+      "поэтому второй запуск переписал бы только метаданные.\n" +
+      "Переименование существующего проекта делается отдельно и осознанно.",
   );
 }
 
@@ -184,7 +204,8 @@ function assertCleanWorkingTree(options) {
   if (status.trim() !== "") {
     fail(
       "рабочее дерево грязное. Инициализация меняет сотни файлов, и её нельзя " +
-        "будет отделить от ваших правок. Закоммитьте изменения или используйте --force.",
+        "будет отделить от ваших правок. Закоммитьте изменения или передайте " +
+        "--force, если готовы разбирать смешанный diff.",
     );
   }
 }
@@ -276,6 +297,13 @@ function writeAdoptionTable() {
     };
   });
 
+  // Пересмотра требуют только ДЕЙСТВУЮЩИЕ решения. Отменённое или замещённое
+  // решение шаблона не может стать решением проекта: «принять» его нечего.
+  // Такие ADR остаются в таблице справочно — они объясняют, почему действующее
+  // решение выглядит именно так.
+  const active = rows.filter((row) => row.status === "accepted");
+  const historical = rows.filter((row) => row.status !== "accepted");
+
   const lines = [
     "# Принятие ADR шаблона",
     "",
@@ -294,17 +322,37 @@ function writeAdoptionTable() {
     "утверждать `accepted` и остаётся в дереве. Отказ оформляется новым ADR,",
     "который его замещает.",
     "",
-    "| ADR | Решение шаблона | Статус в шаблоне | Состояние в проекте | Примечание |",
-    "|---|---|---|---|---|",
-    ...rows.map(
-      (row) =>
-        `| [${row.id}](${row.file}) | ${row.title} | ${row.status} | pending | |`,
+    "## Требуют пересмотра",
+    "",
+    "| ADR | Решение шаблона | Состояние в проекте | Примечание |",
+    "|---|---|---|---|",
+    ...active.map(
+      (row) => `| [${row.id}](${row.file}) | ${row.title} | pending | |`,
     ),
     "",
   ];
 
+  if (historical.length > 0) {
+    lines.push(
+      "## Справочно: недействующие решения шаблона",
+      "",
+      "Пересмотра не требуют — принимать нечего. Оставлены, потому что",
+      "объясняют, почему действующие решения выглядят именно так.",
+      "",
+      "| ADR | Решение шаблона | Статус в шаблоне |",
+      "|---|---|---|",
+      ...historical.map(
+        (row) => `| [${row.id}](${row.file}) | ${row.title} | ${row.status} |`,
+      ),
+      "",
+    );
+  }
+
   writeFileSync(join(decisionsDir, "ADOPTION.md"), lines.join("\n"), "utf8");
-  console.log(`ADR: создан ADOPTION.md, ${rows.length} решений к пересмотру`);
+  console.log(
+    `ADR: создан ADOPTION.md, ${active.length} решений к пересмотру` +
+      (historical.length > 0 ? `, ${historical.length} справочно` : ""),
+  );
 }
 
 function updateMetadata(metadata, target) {

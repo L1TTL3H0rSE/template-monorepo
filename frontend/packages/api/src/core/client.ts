@@ -97,8 +97,21 @@ export class ApiClient {
 
     if (response.status === 204) return undefined as T;
 
-    const payload = (await response.json().catch(() => null)) as
-      SuccessEnvelope<T> | ErrorEnvelope | null;
+    // Чтение тела — вторая точка, где может случиться отмена: заголовки уже
+    // пришли, поток ещё качается. Голый `.catch(() => null)` превратил бы
+    // AbortError в пустой payload, и на статусе 200 код дошёл бы до
+    // `payload.data` с TypeError вместо RequestCancelledError.
+    let payload: SuccessEnvelope<T> | ErrorEnvelope | null;
+    try {
+      payload = (await response.json()) as SuccessEnvelope<T> | ErrorEnvelope;
+    } catch (caught) {
+      if (isAbort(caught, options.signal)) {
+        throw new RequestCancelledError(caught);
+      }
+      // Невалидный JSON — не отмена. Ответ разбирается ниже по статусу: у
+      // сервера мог быть 500 с HTML-страницей вместо конверта.
+      payload = null;
+    }
 
     if (!response.ok || payload?.error) {
       const failure = (payload ?? {}) as ErrorEnvelope;

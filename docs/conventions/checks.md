@@ -86,6 +86,22 @@ pnpm perf:bundle
   пакеты без минификации и базой для performance-заявлений не является;
 - будущий проект может превратить принятый бюджет в падающую проверку.
 
+## Механика шаблона
+
+При изменении идентичности, путей документации, раскладки ADR или памяти:
+
+```bash
+node --test scripts/template-identity.test.mjs
+node scripts/check-template-residue.mjs
+node scripts/init-project.mjs --display-name "Acme Test" --slug acme-test \
+  --repository-name acme-test --npm-scope @acme-test \
+  --go-module-prefix example.com/acme-test --dry-run
+```
+
+Полный smoke-test делается на **временной копии** вне рабочего дерева: сборка
+исходного шаблона не доказывает, что соберётся инициализированный проект
+([`TEMPLATE.md`](../TEMPLATE.md)).
+
 ## Детерминизм генераторов
 
 Генератор обязан давать одинаковый результат на любой машине. Проверка —

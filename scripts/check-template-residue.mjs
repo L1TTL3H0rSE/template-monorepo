@@ -12,6 +12,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   collectTextFiles,
+  containsToken,
   readTemplateMetadata,
   residueTokens,
   TEMPLATE_METADATA_FILE,
@@ -48,9 +49,17 @@ function main() {
     const lines = content.split(/\r?\n/);
 
     lines.forEach((line, index) => {
-      for (const { token, kind } of tokens) {
-        if (line.includes(token)) {
-          findings.push({ file, line: index + 1, kind, token, text: line.trim() });
+      for (const rule of tokens) {
+        // containsToken применяет ТЕ ЖЕ правила границ, что и замена: иначе
+        // проверка красная на дереве, которое инициализировано правильно.
+        if (containsToken(line, rule)) {
+          findings.push({
+            file,
+            line: index + 1,
+            kind: rule.kind,
+            token: rule.token,
+            text: line.trim(),
+          });
         }
       }
     });
@@ -87,16 +96,17 @@ function verifySourceConsistency(metadata) {
   if (!npmScope.startsWith("@")) {
     problems.push(`npmScope "${npmScope}" не начинается с @`);
   }
-  if (npmScope !== `@${slug}`) {
-    problems.push(`npmScope "${npmScope}" не соответствует slug "${slug}"`);
-  }
-  if (!repositoryName.startsWith(slug)) {
-    problems.push(
-      `repositoryName "${repositoryName}" не начинается со slug "${slug}"`,
-    );
-  }
-  if (goModulePrefix.trim() === "") {
-    problems.push("goModulePrefix пуст");
+  // Связи между slug и repositoryName намеренно НЕТ: имя репозитория на
+  // хостинге и идентичность внутри файлов — разные вещи, и требование
+  // «repositoryName начинается со slug» ложно уже для этого шаблона
+  // (template-monorepo против roleplay).
+  for (const [field, value] of Object.entries({
+    slug,
+    repositoryName,
+    goModulePrefix,
+  })) {
+    if (value.trim() === "") problems.push(`${field} пуст`);
+    if (/\s/.test(value)) problems.push(`${field} содержит пробелы`);
   }
   if (metadata.projectIdentity !== null) {
     problems.push("projectIdentity заполнен, но initialized === false");

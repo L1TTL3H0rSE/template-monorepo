@@ -125,19 +125,20 @@ function isTextFile(basename) {
 }
 
 /**
- * Строит упорядоченный список замен.
+ * Строит список правил замены, отсортированный от самого длинного шаблона к
+ * самому короткому.
  *
- * Порядок критичен и не может быть произвольным:
- *
- *  1. `@roleplay/` обязан идти ДО `roleplay/`, иначе scope превратится в
- *     `@github.com/acme/...` — npm-скоуп с путём внутри;
- *  2. `roleplay-website` обязан идти ДО голого `roleplay`, иначе останется
- *     `acme-website` вместо имени репозитория;
- *  3. голый slug идёт последним и подбирает то, что осталось.
+ * Длина решает конфликты перекрытия: `@roleplay/` должен победить `roleplay/`,
+ * а `template-monorepo` — голый `roleplay`. Явный порядок в массиве для этого
+ * ненадёжен: он ломается при первом добавлении поля в идентичность.
  */
 export function buildReplacements(source, target) {
   return [
-    { from: `${source.npmScope}/`, to: `${target.npmScope}/`, kind: "npm-scope" },
+    {
+      from: `${source.npmScope}/`,
+      to: `${target.npmScope}/`,
+      kind: "npm-scope",
+    },
     { from: source.npmScope, to: target.npmScope, kind: "npm-scope" },
     {
       from: `${source.goModulePrefix}/`,
@@ -150,33 +151,94 @@ export function buildReplacements(source, target) {
       kind: "repository",
     },
     { from: source.displayName, to: target.displayName, kind: "display-name" },
-    { from: source.slug, to: target.slug, kind: "slug" },
-  ].filter((replacement) => replacement.from !== replacement.to);
+    { from: source.slug, to: target.slug, kind: "slug", wholeWord: true },
+  ]
+    .filter((replacement) => replacement.from !== replacement.to)
+    .sort((a, b) => b.from.length - a.from.length);
 }
 
-/** Применяет замены к содержимому. Возвращает новый текст и статистику. */
+/** Символы, которые считаются частью «слова» при boundary-aware замене. */
+const WORD_CHARACTER = /[A-Za-z0-9]/;
+
+/**
+ * Применяет замены ОДНИМ проходом по исходному тексту.
+ *
+ * Последовательные `split().join()` каскадят: уже вставленный результат
+ * попадает под следующее правило. Реальный пример — цель `@my-roleplay` при
+ * исходном `@roleplay`: правило `roleplay -> acme` превратило бы её в
+ * `@my-acme`, причём `.template.json` утверждал бы `@my-roleplay`, а проверка
+ * остатков прошла бы (исходного токена в файле больше нет).
+ *
+ * Здесь каждая позиция исходного текста обрабатывается ровно один раз, и
+ * вставленный текст под следующие правила не попадает.
+ *
+ * `wholeWord` нужен голому slug: без границ он вырезает подстроку из чужих
+ * слов. Границей считается любой не-алфанумерик, поэтому `template-monorepo`
+ * и `@roleplay` остаются достижимыми для своих, более длинных правил.
+ */
 export function applyReplacements(content, replacements) {
-  let result = content;
   const counts = new Map();
+  let result = "";
+  let index = 0;
 
-  for (const { from, to, kind } of replacements) {
-    const parts = result.split(from);
-    if (parts.length === 1) continue;
+  outer: while (index < content.length) {
+    for (const rule of replacements) {
+      if (!content.startsWith(rule.from, index)) continue;
+      if (rule.wholeWord && !hasWordBoundaries(content, index, rule.from.length)) {
+        continue;
+      }
 
-    counts.set(kind, (counts.get(kind) ?? 0) + parts.length - 1);
-    result = parts.join(to);
+      result += rule.to;
+      counts.set(rule.kind, (counts.get(rule.kind) ?? 0) + 1);
+      index += rule.from.length;
+      continue outer;
+    }
+
+    result += content[index];
+    index += 1;
   }
 
   return { result, counts };
 }
 
-/** Токены исходной идентичности, наличие которых после инициализации — остаток. */
+function hasWordBoundaries(content, start, length) {
+  const before = content[start - 1];
+  const after = content[start + length];
+
+  return (
+    (before === undefined || !WORD_CHARACTER.test(before)) &&
+    (after === undefined || !WORD_CHARACTER.test(after))
+  );
+}
+
+/**
+ * Токены исходной идентичности, наличие которых после инициализации — остаток.
+ *
+ * `wholeWord` обязан совпадать с правилами замены. Асимметрия здесь — не
+ * мелочь: если замена пропускает `multiroleplayer` как чужое слово, а проверка
+ * находит в нём подстроку, checker навсегда красный на корректном дереве. И
+ * наоборот — более слабая проверка молча пропустила бы то, что замена не
+ * тронула.
+ */
 export function residueTokens(source) {
   return [
     { token: source.npmScope, kind: "npm-scope" },
     { token: `${source.goModulePrefix}/`, kind: "go-module" },
     { token: source.repositoryName, kind: "repository" },
     { token: source.displayName, kind: "display-name" },
-    { token: source.slug, kind: "slug" },
+    { token: source.slug, kind: "slug", wholeWord: true },
   ];
+}
+
+/** Ищет токен по тем же правилам, по которым его заменяет applyReplacements. */
+export function containsToken(line, { token, wholeWord }) {
+  if (!wholeWord) return line.includes(token);
+
+  let index = line.indexOf(token);
+  while (index !== -1) {
+    if (hasWordBoundaries(line, index, token.length)) return true;
+    index = line.indexOf(token, index + 1);
+  }
+
+  return false;
 }

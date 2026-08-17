@@ -30,9 +30,17 @@ type SearchCall = {
  * Управляемая реализация порта: тест сам решает, какой запрос завершится
  * первым. Без этого гонку «медленный первый, быстрый второй» не воспроизвести
  * детерминированно.
+ *
+ * `honorAbort` управляет тем, реагирует ли транспорт на сигнал.
+ *
+ * Это не косметика: при `honorAbort: true` отменённый промис уже завершён
+ * отказом, и последующий `resolve` физически ничего не делает — такой тест
+ * доказывает работу отмены, но НЕ счётчика поколений. Чтобы проверить второй
+ * рубеж, нужен транспорт, который сигнал игнорирует.
  */
 class ControlledCharacterApi implements CharacterApi {
   readonly calls: SearchCall[] = [];
+  honorAbort = true;
 
   search(
     params: CharacterSearch,
@@ -54,9 +62,11 @@ class ControlledCharacterApi implements CharacterApi {
     };
     this.calls.push(call);
 
-    context?.signal?.addEventListener("abort", () => {
-      reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
-    });
+    if (this.honorAbort) {
+      context?.signal?.addEventListener("abort", () => {
+        reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+      });
+    }
 
     return promise;
   }
@@ -98,20 +108,67 @@ const { useCharactersStore } = await import("~/stores/characters");
 beforeEach(() => {
   setActivePinia(createPinia());
   api.calls.length = 0;
+  api.honorAbort = true;
 });
 
 describe("useCharactersStore: интерактивное чтение", () => {
-  it("устаревший ответ не перезаписывает более новое состояние", async () => {
+  /**
+   * Проверка ВТОРОГО рубежа — счётчика поколений (MEM-022).
+   *
+   * Транспорт намеренно игнорирует сигнал, поэтому отменённый запрос всё равно
+   * доходит до конца и пытается записать состояние. Именно так ведёт себя
+   * реализация, не поддерживающая отмену, — и именно этот случай `abort()`
+   * закрыть не может: он не отменяет уже разрешившийся промис.
+   *
+   * Без счётчика поколений в сторе этот тест падает.
+   */
+  it("устаревший ответ не перезаписывает состояние даже без отмены", async () => {
+    api.honorAbort = false;
     const store = useCharactersStore();
 
     const first = store.load();
     const second = store.load();
 
-    // Второй запрос отвечает первым — типичная гонка при быстром вводе.
+    // Второй отвечает первым — типичная гонка при быстром вводе.
     api.calls[1]!.resolve(page(["новый"]));
     await second;
 
-    // Первый доходит позже и обязан быть проигнорирован.
+    // Первый доходит позже, полностью успешно, и обязан быть проигнорирован.
+    api.calls[0]!.resolve(page(["устаревший"]));
+    await first;
+
+    expect(store.items.map((item) => item.name)).toEqual(["новый"]);
+    expect(store.pending).toBe(false);
+  });
+
+  it("устаревшая ошибка не затирает состояние актуального чтения", async () => {
+    api.honorAbort = false;
+    const store = useCharactersStore();
+
+    const first = store.load();
+    const second = store.load();
+
+    api.calls[1]!.resolve(page(["новый"]));
+    await second;
+
+    api.calls[0]!.reject(new Error("устаревший сбой"));
+    await first;
+
+    expect(store.error).toBeNull();
+    expect(store.items.map((item) => item.name)).toEqual(["новый"]);
+  });
+
+  it("устаревший ответ не проходит, когда транспорт отмену поддерживает", async () => {
+    const store = useCharactersStore();
+
+    const first = store.load();
+    const second = store.load();
+
+    api.calls[1]!.resolve(page(["новый"]));
+    await second;
+
+    // Отменённый промис уже отвергнут — resolve ничего не делает. Это
+    // проверка ПЕРВОГО рубежа, отмены.
     api.calls[0]!.resolve(page(["устаревший"]));
     await first.catch(() => undefined);
 

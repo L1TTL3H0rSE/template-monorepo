@@ -177,6 +177,52 @@ describe("ApiClient: отмена", () => {
     expect(failure).toBeInstanceOf(RequestCancelledError);
   });
 
+  // Гонка на ЧТЕНИИ ТЕЛА: заголовки пришли, поток ещё качается, отмена
+  // происходит во время json(). Без явного перехвата AbortError превратился бы
+  // в пустой payload, и на статусе 200 код упал бы TypeError на `payload.data`.
+  it("отмена во время чтения тела не превращается в TypeError", async () => {
+    const controller = new AbortController();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        status: 200,
+        json: async () => {
+          controller.abort();
+          throw Object.assign(new Error("aborted"), { name: "AbortError" });
+        },
+      })) as unknown as typeof fetch,
+    );
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client
+      .get("example", { signal: controller.signal })
+      .catch((error) => error);
+
+    expect(failure).toBeInstanceOf(RequestCancelledError);
+    expect(failure).not.toBeInstanceOf(TypeError);
+  });
+
+  // Обратная сторона: невалидный JSON — не отмена, а ошибка сервера.
+  it("битое тело при 500 остаётся ApiError, а не отменой", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new SyntaxError("Unexpected token < in JSON");
+        },
+      })) as unknown as typeof fetch,
+    );
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client.get("example").catch((error) => error);
+
+    expect(failure).toBeInstanceOf(ApiError);
+    expect((failure as ApiError).status).toBe(500);
+  });
+
   // Обратная сторона: изменение не должно замаскировать настоящий сбой сети.
   it("настоящий сетевой сбой остаётся NetworkError", async () => {
     mockFetch({ reject: new TypeError("failed to fetch") });
