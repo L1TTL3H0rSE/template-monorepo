@@ -38,7 +38,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Ошибка сети или прерывания: ответа от сервера не было вообще. */
+/** Ошибка сети: ответа от сервера не было вообще. */
 export class NetworkError extends Error {
   constructor(message: string, cause?: unknown) {
     // cause передаётся штатным полем Error, а не собственным свойством:
@@ -46,4 +46,46 @@ export class NetworkError extends Error {
     super(message, { cause });
     this.name = "NetworkError";
   }
+}
+
+/**
+ * Запрос отменён вызывающим.
+ *
+ * Отдельный тип, а не `NetworkError`, по одной причине: отмена — это
+ * НОРМАЛЬНЫЙ исход, а не отказ. Интерактивный поиск отменяет предыдущее чтение
+ * на каждом нажатии клавиши; если отмена приходит как ошибка сети,
+ * пользователь видит «Сервис недоступен» при обычном наборе текста.
+ *
+ * Вызывающий обязан отличать эти два случая, а различить их по тексту
+ * сообщения нельзя.
+ */
+export class RequestCancelledError extends Error {
+  constructor(cause?: unknown) {
+    super("Запрос отменён", { cause });
+    this.name = "RequestCancelledError";
+  }
+}
+
+/**
+ * Распознаёт отмену.
+ *
+ * Проверяются оба признака: `AbortError` от fetch и состояние сигнала. В гонке
+ * между отменой и сетевым сбоем сработать может любой из них, и полагаться на
+ * один — значит иногда показать пользователю ложную ошибку.
+ */
+export function isAbort(caught: unknown, signal?: AbortSignal): boolean {
+  if (signal?.aborted) return true;
+  if (caught instanceof RequestCancelledError) return true;
+
+  return (
+    typeof caught === "object" &&
+    caught !== null &&
+    "name" in caught &&
+    (caught as { name?: unknown }).name === "AbortError"
+  );
+}
+
+/** Была ли операция отменена, а не завершилась ошибкой. */
+export function isCancelled(caught: unknown): boolean {
+  return caught instanceof RequestCancelledError || isAbort(caught);
 }

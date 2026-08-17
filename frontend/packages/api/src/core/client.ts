@@ -1,4 +1,9 @@
-import { ApiError, NetworkError } from "./errors";
+import {
+  ApiError,
+  isAbort,
+  NetworkError,
+  RequestCancelledError,
+} from "./errors";
 
 /** Конверт успешного ответа бэкенда (kit/ginx SuccessResponse). */
 export type SuccessEnvelope<T> = {
@@ -71,7 +76,23 @@ export class ApiClient {
         signal: options.signal,
       });
     } catch (caught) {
+      // Отмена — не отказ сервиса. Когда пользователь печатает в поиске,
+      // каждый следующий символ отменяет предыдущее чтение; обёрнутая в
+      // NetworkError отмена показала бы «Сервис недоступен» на каждом нажатии.
+      //
+      // Проверяется и сигнал, и имя ошибки: `AbortError` приходит от fetch, а
+      // сигнал — от вызывающего, и в гонке сработать может любое из двух.
+      if (isAbort(caught, options.signal)) {
+        throw new RequestCancelledError(caught);
+      }
+
       throw new NetworkError("Сервис недоступен", caught);
+    }
+
+    // Тело могло начать приходить до отмены: гонка между abort и чтением
+    // ответа реальна, и её тоже нельзя показать как отказ сервиса.
+    if (options.signal?.aborted) {
+      throw new RequestCancelledError();
     }
 
     if (response.status === 204) return undefined as T;

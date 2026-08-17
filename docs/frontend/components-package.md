@@ -230,7 +230,7 @@ Vue, попавший внутрь бандла пакета, даст втор�
 В бандл подставляется хеш содержимого `src`, и плагин пишет его в DOM:
 
 ```js
-document.documentElement.dataset.roleplayComponentsBuild;
+document.documentElement.dataset.componentsBuildFingerprint;
 ```
 
 Это отделяет «правка неверна» от «потребитель загрузил старый бандл» — вторая

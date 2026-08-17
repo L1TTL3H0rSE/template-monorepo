@@ -13,7 +13,9 @@
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "perf:bundle": "pnpm build && node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt",
+    "perf:bundle:json": "node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt --json"
   },
   "dependencies": {
     "@pinia/nuxt": "catalog:",

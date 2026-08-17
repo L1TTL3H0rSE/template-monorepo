@@ -40,6 +40,27 @@ pnpm --filter @roleplay/web dev             # http://localhost:3000
 pnpm storybook                              # http://localhost:6006
 ```
 
+## Использование как шаблона
+
+Репозиторий одновременно является рабочей референс-реализацией и шаблоном для
+новых проектов. После клонирования (или создания из GitHub template):
+
+```bash
+node scripts/init-project.mjs \
+  --display-name "Acme" \
+  --slug acme \
+  --repository-name acme-platform \
+  --npm-scope @acme \
+  --go-module-prefix github.com/acme/acme-platform
+```
+
+Скрипт заменяет идентичность проекта, разделяет память шаблона и проекта и
+генерирует список унаследованных ADR к пересмотру. Демонстрационные домены
+(`gotemplate`, `example`, `character`) остаются рабочим кодом до осознанной
+замены.
+
+Полный лайфцикл — [`docs/TEMPLATE.md`](docs/TEMPLATE.md).
+
 ## Структура
 
 ```text

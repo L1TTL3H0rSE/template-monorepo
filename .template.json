@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "initialized": false,
+  "sourceIdentity": {
+    "displayName": "Roleplay",
+    "slug": "roleplay",
+    "repositoryName": "roleplay-website",
+    "npmScope": "@roleplay",
+    "goModulePrefix": "roleplay"
+  },
+  "projectIdentity": null,
+  "demo": {
+    "backendReferenceService": "gotemplate",
+    "backendReferenceDomain": "example",
+    "frontendReferenceDomain": "character"
+  }
+}

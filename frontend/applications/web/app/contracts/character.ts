@@ -36,14 +36,33 @@ export type CharacterSearch = {
 };
 
 /**
+ * Контекст запроса на уровне ПРИЛОЖЕНИЯ.
+ *
+ * `AbortSignal` — веб-стандарт, а не деталь конкретного транспорта, поэтому он
+ * может стоять в контракте домена. Ничего специфичного для HTTP (заголовки,
+ * коды, URL) сюда не попадает: это сломало бы границу порта.
+ */
+export type RequestContext = {
+  signal?: AbortSignal;
+};
+
+/**
  * Порт домена «персонажи».
  *
  * Реализаций две — HTTP и mock, — и обе обязаны удовлетворять этому типу.
  * Именно поэтому переключение провайдера в `nuxt.config` не требует правок в
  * страницах и сторах.
+ *
+ * Контекст запроса принимает только `search`: у него есть доказанный
+ * потребитель — интерактивный поиск, где параметры меняются быстрее, чем
+ * приходит ответ. Остальные методы получат его тогда, когда появится
+ * потребитель, а не ради симметрии.
  */
 export interface CharacterApi {
-  search(params: CharacterSearch): Promise<CharacterPage>;
+  search(
+    params: CharacterSearch,
+    context?: RequestContext,
+  ): Promise<CharacterPage>;
   getById(id: string): Promise<Character>;
   create(draft: CharacterDraft): Promise<Character>;
   rename(id: string, name: string): Promise<Character>;

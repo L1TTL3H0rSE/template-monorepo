@@ -63,7 +63,7 @@ allowlist и падает в обе стороны: и когда экспорт
 ## Отладка stale-сборки
 
 ```js
-document.documentElement.dataset.roleplayComponentsBuild;
+document.documentElement.dataset.componentsBuildFingerprint;
 ```
 
 Значение равно отпечатку `src` на момент сборки. Если оно не совпадает с

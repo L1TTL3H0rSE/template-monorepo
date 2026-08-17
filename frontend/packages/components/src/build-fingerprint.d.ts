@@ -1,2 +1,2 @@
 /** Отпечаток сборки, подставляемый Vite через `define`. */
-declare const __ROLEPLAY_COMPONENTS_BUILD__: string;
+declare const __COMPONENTS_BUILD_FINGERPRINT__: string;

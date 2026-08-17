@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiClient, ApiError, NetworkError } from "../src/core/index";
+import {
+  ApiClient,
+  ApiError,
+  isCancelled,
+  NetworkError,
+  RequestCancelledError,
+} from "../src/core/index";
 
 function mockFetch(response: {
   status?: number;
@@ -110,5 +116,88 @@ describe("ApiClient", () => {
     const client = new ApiClient("https://api.test/api/v1");
 
     await expect(client.delete("example/42")).resolves.toBeUndefined();
+  });
+});
+
+/**
+ * Отмена — нормальный исход интерактивного чтения, а не отказ сервиса.
+ *
+ * Если она приходит как NetworkError, обычный набор текста в поиске мигает
+ * сообщением «Сервис недоступен»: каждый следующий символ отменяет предыдущий
+ * запрос.
+ */
+describe("ApiClient: отмена", () => {
+  it("AbortError от fetch не становится NetworkError", async () => {
+    mockFetch({
+      reject: Object.assign(new Error("aborted"), { name: "AbortError" }),
+    });
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client.get("example").catch((error) => error);
+
+    expect(failure).toBeInstanceOf(RequestCancelledError);
+    expect(failure).not.toBeInstanceOf(NetworkError);
+    expect(isCancelled(failure)).toBe(true);
+  });
+
+  it("отменённый сигнал распознаётся, даже если fetch отверг иначе", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    mockFetch({ reject: new TypeError("failed to fetch") });
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client
+      .get("example", { signal: controller.signal })
+      .catch((error) => error);
+
+    expect(failure).toBeInstanceOf(RequestCancelledError);
+  });
+
+  // Гонка: тело начало приходить, отмена случилась после ответа fetch, но до
+  // разбора. Показывать это как отказ сервиса тоже нельзя.
+  it("отмена после успешного ответа не отдаёт данные", async () => {
+    const controller = new AbortController();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        controller.abort();
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ error: false, data: { id: "1" } }),
+        } as Response;
+      }),
+    );
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client
+      .get("example", { signal: controller.signal })
+      .catch((error) => error);
+
+    expect(failure).toBeInstanceOf(RequestCancelledError);
+  });
+
+  // Обратная сторона: изменение не должно замаскировать настоящий сбой сети.
+  it("настоящий сетевой сбой остаётся NetworkError", async () => {
+    mockFetch({ reject: new TypeError("failed to fetch") });
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client.get("example").catch((error) => error);
+
+    expect(failure).toBeInstanceOf(NetworkError);
+    expect(isCancelled(failure)).toBe(false);
+  });
+
+  it("ошибка сервера остаётся ApiError при живом сигнале", async () => {
+    const controller = new AbortController();
+    mockFetch({ status: 500, body: { error: true, message: "boom" } });
+    const client = new ApiClient("https://api.test/api/v1");
+
+    const failure = await client
+      .get("example", { signal: controller.signal })
+      .catch((error) => error);
+
+    expect(failure).toBeInstanceOf(ApiError);
+    expect((failure as ApiError).isServer).toBe(true);
   });
 });

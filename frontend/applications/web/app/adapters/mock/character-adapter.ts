@@ -4,6 +4,7 @@ import type {
   CharacterDraft,
   CharacterPage,
   CharacterSearch,
+  RequestContext,
 } from "~/contracts/character";
 
 /**
@@ -43,10 +44,49 @@ function delay<T>(value: T): Promise<T> {
   return new Promise((resolve) => setTimeout(() => resolve(value), LATENCY_MS));
 }
 
+/**
+ * Задержка, которую можно отменить.
+ *
+ * Без этого mock-провайдер прятал бы гонки, существующие с реальным HTTP:
+ * фикстура всегда доводила бы устаревший запрос до конца, и latest-request-wins
+ * выглядел бы работающим ровно до переключения на настоящий бэкенд.
+ */
+function abortableDelay<T>(value: T, signal?: AbortSignal): Promise<T> {
+  if (signal?.aborted) return Promise.reject(new MockAbortError());
+
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(value), LATENCY_MS);
+
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(new MockAbortError());
+      },
+      { once: true },
+    );
+  });
+}
+
+/**
+ * Имя `AbortError` выбрано не случайно: ровно его отдаёт fetch, и его же
+ * распознаёт `isCancelled` из `@roleplay/api/core`. Так вызывающий обрабатывает
+ * отмену одинаково для обоих провайдеров.
+ */
+class MockAbortError extends Error {
+  constructor() {
+    super("Запрос отменён");
+    this.name = "AbortError";
+  }
+}
+
 export class MockCharacterAdapter implements CharacterApi {
   private readonly items = [...SEED];
 
-  async search(params: CharacterSearch): Promise<CharacterPage> {
+  async search(
+    params: CharacterSearch,
+    context?: RequestContext,
+  ): Promise<CharacterPage> {
     const query = params.query?.trim().toLowerCase();
     const filtered = query
       ? this.items.filter((item) => item.name.toLowerCase().includes(query))
@@ -54,10 +94,13 @@ export class MockCharacterAdapter implements CharacterApi {
 
     // Срез делается здесь, потому что это фикстура. В HTTP-адаптере пагинация
     // остаётся на сервере — см. docs/frontend/api-and-adapters.md.
-    return delay({
-      items: filtered.slice(params.offset, params.offset + params.limit),
-      total: filtered.length,
-    });
+    return abortableDelay(
+      {
+        items: filtered.slice(params.offset, params.offset + params.limit),
+        total: filtered.length,
+      },
+      context?.signal,
+    );
   }
 
   async getById(id: string): Promise<Character> {

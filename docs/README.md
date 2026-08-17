@@ -8,6 +8,7 @@
 
 | Документ | Когда нужен |
 |---|---|
+| [`TEMPLATE.md`](TEMPLATE.md) | Старт нового проекта из этого шаблона |
 | [`STACK.md`](STACK.md) | Перед выбором версии, команды или инструмента |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Перед изменением границ, контрактов, слоёв |
 | [`conventions/naming.md`](conventions/naming.md) | Всегда: как называть файлы, типы, ветки |
@@ -46,6 +47,7 @@
 | [`frontend/state-and-stores.md`](frontend/state-and-stores.md) | Pinia, стор против композабла |
 | [`frontend/api-and-adapters.md`](frontend/api-and-adapters.md) | Контракты, адаптеры, переключение провайдера |
 | [`frontend/eventual-consistency.md`](frontend/eventual-consistency.md) | Запись видна не сразу: оверлей и опрос |
+| [`frontend/performance.md`](frontend/performance.md) | Загрузка, main thread, рендеринг, измерение бандла, lab и field |
 | [`frontend/testing.md`](frontend/testing.md) | Ложное покрытие `.vue`, разделение окружений |
 | [`frontend/nuxt-application.md`](frontend/nuxt-application.md) | Слои приложения, SSR, runtime config |
 

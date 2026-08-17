@@ -204,3 +204,40 @@
   [`docs/conventions/cross-platform.md`](conventions/cross-platform.md).
 - **Проверено:** 2026-08-17.
 
+### MEM-020 — отмена запроса не является ошибкой сети
+
+- **Область:** `frontend/packages/api/src/core`, сторы приложений
+- **Факт:** latest-request-wins отменяет предыдущее чтение на каждом нажатии
+  клавиши в поиске. Если `ApiClient` заворачивает `AbortError` в
+  `NetworkError`, пользователь видит «Сервис недоступен» при обычном наборе
+  текста. Отмена вынесена в отдельный тип `RequestCancelledError`; проверяются
+  оба признака — имя ошибки от fetch и состояние сигнала, потому что в гонке
+  сработать может любой.
+- **Источники:** `frontend/packages/api/src/core/errors.ts`,
+  `frontend/packages/api/test/client.test.ts`,
+  `frontend/applications/web/app/stores/characters.ts`.
+- **Проверено:** 2026-08-17.
+
+### MEM-021 — сброс страницы при новом поиске даёт два чтения
+
+- **Область:** `frontend/applications/*/app/stores`
+- **Факт:** пара `pagination.reset(); load();` в наблюдателе за поисковым
+  запросом выполняет ДВА чтения, если пользователь не на первой странице:
+  сброс будит наблюдателя за номером страницы, и тот запускает своё. Второй
+  запрос гарантированно отменяет первый, поэтому в devtools при каждом поиске
+  виден отменённый запрос. Чтение должен выполнять ровно один наблюдатель.
+- **Источники:** `frontend/applications/web/app/stores/characters.ts`,
+  `frontend/applications/web/test/unit/characters-store.test.ts`.
+- **Проверено:** 2026-08-17.
+
+### MEM-022 — отмены без счётчика поколений недостаточно
+
+- **Область:** `frontend/applications/*/app/stores`
+- **Факт:** `AbortController` не отменяет уже разрешившийся промис. Если ответ
+  успел прийти до `abort()`, устаревшее чтение всё равно запишет состояние.
+  Поэтому стор держит и отмену (освобождает соединение), и монотонный счётчик
+  поколений (гарантия, что записать может только актуальное чтение). Счётчик
+  охраняет также `error` и снятие `pending`.
+- **Источники:** `frontend/applications/web/app/stores/characters.ts`,
+  `frontend/applications/web/test/unit/characters-store.test.ts`.
+- **Проверено:** 2026-08-17.

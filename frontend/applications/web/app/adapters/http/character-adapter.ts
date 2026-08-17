@@ -11,6 +11,7 @@ import type {
   CharacterDraft,
   CharacterPage,
   CharacterSearch,
+  RequestContext,
 } from "~/contracts/character";
 
 /**
@@ -24,9 +25,15 @@ import type {
 export class HttpCharacterAdapter implements CharacterApi {
   constructor(private readonly client: ApiClient) {}
 
-  async search(params: CharacterSearch): Promise<CharacterPage> {
+  async search(
+    params: CharacterSearch,
+    context?: RequestContext,
+  ): Promise<CharacterPage> {
     const payload = await this.client.get<unknown>("example", {
       query: { q: params.query, from: params.offset, size: params.limit },
+      // Сигнал доходит до fetch. Ни страница, ни стор не касаются ApiClient
+      // напрямую — отмена проходит через порт.
+      signal: context?.signal,
     });
     const dto = parseResponse(
       exampleSearchResponseSchema,

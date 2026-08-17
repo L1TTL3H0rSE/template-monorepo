@@ -7,7 +7,7 @@ import vue from "@vitejs/plugin-vue";
 /**
  * Отпечаток сборки: хеш содержимого src.
  *
- * Он попадает в бандл и в `data-roleplay-components-build` на <html>, поэтому
+ * Он попадает в бандл и в `data-components-build-fingerprint` на <html>, поэтому
  * при отладке видно, свежий ли бандл загрузил потребитель. Иначе «правка не
  * применилась» и «правка неверна» выглядят одинаково.
  */
@@ -31,7 +31,7 @@ function computeBuildFingerprint(dir = resolve(__dirname, "src")): string {
 
 export default defineConfig({
   define: {
-    __ROLEPLAY_COMPONENTS_BUILD__: JSON.stringify(computeBuildFingerprint()),
+    __COMPONENTS_BUILD_FINGERPRINT__: JSON.stringify(computeBuildFingerprint()),
   },
 
   resolve: {

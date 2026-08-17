@@ -36,7 +36,7 @@
 4. Порядок сборки зафиксирован в `build:local`: `shared` → `api` →
    `components`.
 5. В бандл подставляется отпечаток содержимого `src`, и плагин пишет его в
-   `document.documentElement.dataset.roleplayComponentsBuild`.
+   `document.documentElement.dataset.componentsBuildFingerprint`.
 
 ## Рассмотренные варианты
 
