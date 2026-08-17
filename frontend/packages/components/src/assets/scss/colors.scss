@@ -1,0 +1,76 @@
+// Палитра как CSS-переменные.
+//
+// Почему CSS-переменные, а не SCSS-переменные: значение можно переопределить в
+// рантайме (тема, скоуп компонента, media query), а SCSS-переменная запекается
+// на сборке. Компонент никогда не пишет hex напрямую — он читает токен.
+//
+// Имя токена = <роль>-<оттенок>-color. Роль описывает НАЗНАЧЕНИЕ, а не цвет:
+// --primary-main-color, а не --purple-500. Смена палитры не должна требовать
+// переименования переменных.
+:root {
+  // текст
+  --text-primary-color: #0e0b16e0;
+  --text-secondary-color: #0e0b1699;
+  --text-placeholder-color: #b6b0c4;
+  --text-light-color: #ffffff;
+  --text-disabled-color: #c4c0cc;
+
+  // primary — основное действие
+  --primary-main-color: #6c4bd8;
+  --primary-dark-color: #4b31a3;
+  --primary-light-color: #f5f2ff;
+  --primary-hover-color: #8468e2;
+  --primary-active-color: #573ab5;
+  --primary-contrast-color: #ffffff;
+  --primary-focus-visible-color: #b7a5f2;
+
+  // secondary — вторичное действие
+  --secondary-main-color: #6b6880;
+  --secondary-dark-color: #4c4a5c;
+  --secondary-light-color: #eceaf3;
+  --secondary-hover-color: #f5f2ff;
+  --secondary-active-color: #ece7fb;
+  --secondary-border-color: #e4e1ee;
+  --secondary-contrast-color: #ffffff;
+
+  // статусы
+  --error-default-color: #e2504f;
+  --error-hover-color: #ef7574;
+  --error-active-color: #c23a39;
+  --error-contrast-color: #ffffff;
+
+  --warning-default-color: #e0a020;
+  --warning-hover-color: #f0b641;
+  --warning-active-color: #bd8412;
+  --warning-contrast-color: #ffffff;
+
+  --success-default-color: #3faa5a;
+  --success-hover-color: #5cc276;
+  --success-active-color: #318c48;
+  --success-contrast-color: #ffffff;
+
+  --info-default-color: #3d7ede;
+  --info-hover-color: #5f99ea;
+  --info-active-color: #2f65b8;
+  --info-contrast-color: #ffffff;
+
+  // фон
+  --background-primary-color: #f7f6fb;
+  --background-secondary-color: #efecfa;
+  --background-placeholder-color: #f2f1f6;
+  --background-blackout-color: #0e0b161a;
+  --background-light-color: #ffffff;
+
+  // прочее
+  --divider-default-color: #0e0b161f;
+  --link-default-color: #6c4bd8;
+  --link-hover-color: #8468e2;
+  --link-visited-color: #8f7ad0;
+  --disabled-background-color: #f2f1f6;
+  --disabled-color: #c4c0cc;
+
+  // skeleton хранится компонентами R,G,B: значение подставляется в rgba(),
+  // которое не принимает hex.
+  --skeleton-light-color: 242, 241, 246;
+  --skeleton-dark-color: 214, 211, 224;
+}

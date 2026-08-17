@@ -1,0 +1,18 @@
+// Слои наложения. Единственный источник z-index в проекте.
+//
+// Локальный z-index: 9999 в компоненте — способ выиграть один спор и проиграть
+// следующий: числа перестают что-либо значить. Новый слой добавляется сюда, со
+// своим местом в порядке.
+$z-index-popups: 1004;
+$z-index-modal: 1003;
+$z-index-mobile-menu: 1002;
+$z-index-overflow-menu: 1001;
+$z-index-tooltip: 1000;
+
+$z-index-max: 9999;
+
+// Скругления.
+$radius-small: 0.25rem;
+$radius-medium: 0.5rem;
+$radius-large: 1rem;
+$radius-round: 50%;

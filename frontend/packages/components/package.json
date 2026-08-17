@@ -1,0 +1,64 @@
+{
+  "name": "@roleplay/components",
+  "version": "0.1.0",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles": "./dist/style.css",
+    "./scss/*": "./src/assets/scss/*"
+  },
+  "files": [
+    "dist",
+    "src/assets/scss"
+  ],
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "dev:host": "storybook dev -p 6006 --host 0.0.0.0",
+    "build": "pnpm generate && vite build && pnpm build:types",
+    "build:local": "pnpm generate && vite build --minify false && pnpm build:types",
+    "build:watch": "pnpm build:local && vite build --watch --minify false --emptyOutDir false",
+    "build:types": "vue-tsc --declaration --emitDeclarationOnly -p tsconfig.types.json && resolve-tspaths -p tsconfig.types.json",
+    "build-storybook": "storybook build",
+    "generate": "node scripts/generate-breakpoints.mjs && node scripts/generate-component-index.mjs",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@roleplay/eslint-config": "workspace:*",
+    "@storybook/addon-essentials": "catalog:",
+    "@storybook/addon-links": "catalog:",
+    "@storybook/vue3": "catalog:",
+    "@storybook/vue3-vite": "catalog:",
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vue/test-utils": "catalog:",
+    "eslint": "catalog:",
+    "happy-dom": "catalog:",
+    "pinia": "catalog:",
+    "resolve-tspaths": "catalog:",
+    "sass-embedded": "catalog:",
+    "storybook": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

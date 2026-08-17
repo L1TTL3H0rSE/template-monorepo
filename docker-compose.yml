@@ -1,0 +1,116 @@
+# Локальный DEV-стек.
+#
+# Прямой вызов требует явного --parallel: без него сборка нескольких образов
+# идёт последовательно и занимает кратно больше времени.
+#
+#   docker compose --parallel 4 up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    # max_connections поднят с дефолтных 100 осознанно.
+    #
+    # Арифметика, о которой забывают: каждый Go-сервис держит СВОЙ пул
+    # (DB_MAX_CONNS, по умолчанию 10). Пятнадцать сервисов — это уже 150
+    # соединений в покое, плюс миграции при старте, плюс psql разработчика.
+    # Дефолтных 100 не хватает, и стенд падает при первой же нагрузке с
+    # `FATAL: sorry, too many clients already` — причём падает не тот сервис,
+    # который виноват, а тот, который подключился последним.
+    #
+    # Правило: max_connections >= сумма DB_MAX_CONNS всех сервисов + 50 запаса.
+    # Каждое соединение стоит памяти, поэтому в production ответ другой —
+    # pgbouncer в режиме transaction pooling, а не рост этого числа.
+    command:
+      - postgres
+      - -c
+      - max_connections=500
+      - -c
+      - shared_buffers=256MB
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gotemplate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Сервис зависит от готовности БД, а не от факта запуска контейнера:
+      # без healthcheck миграции стартуют раньше, чем Postgres принимает
+      # соединения, и первый запуск падает.
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gotemplate"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Одноразовый засев корневых данных. Выполняется ДО сервиса и завершается.
+  #
+  # Он существует потому, что корневые данные упираются в циклическую
+  # зависимость прав: чтобы выдать роль администратора, нужен пользователь;
+  # чтобы создать пользователя, нужно подразделение; чтобы создать
+  # подразделение, нужны права администратора. Разорвать цикл может только
+  # запись в обход HTTP и проверки доступа — см. cmd/bootstrap.
+  gotemplate-bootstrap:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_DIR: gotemplate
+    command: ["./bootstrap"]
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: gotemplate
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SSL_MODE: disable
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  gotemplate:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        SERVICE_DIR: gotemplate
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: gotemplate
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_SSL_MODE: disable
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      RATELIMIT_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # service_completed_successfully, а не service_started: сервис не должен
+      # подниматься, если засев упал — иначе стенд работает на наполовину
+      # заполненной БД, и причина отказа обнаружится далеко от места.
+      gotemplate-bootstrap:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    environment:
+      NUXT_PUBLIC_API_PROVIDER: http
+      NUXT_PUBLIC_API_BASE_URL: http://localhost:8080/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - gotemplate
+
+volumes:
+  postgres-data:

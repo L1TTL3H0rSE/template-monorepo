@@ -1,0 +1,48 @@
+@use "./typography-api" as *;
+
+// Базовая типографика документа: голые теги получают токен один раз, чтобы
+// компонентам не приходилось задавать её повторно.
+h1 {
+  @include typography(h-1);
+}
+h2 {
+  @include typography(h-2);
+}
+h3 {
+  @include typography(h-3);
+}
+h4 {
+  @include typography(h-4);
+}
+h5 {
+  @include typography(h-5);
+}
+h6 {
+  @include typography(h-6);
+}
+p {
+  @include typography(p-primary);
+}
+small {
+  @include typography(p-s);
+}
+
+body {
+  color: var(--text-primary-color);
+  background-color: var(--background-primary-color);
+  @include typography(p-primary);
+}
+
+a {
+  color: var(--link-default-color);
+  text-decoration: none;
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--link-hover-color);
+    }
+  }
+  &:visited {
+    color: var(--link-visited-color);
+  }
+}

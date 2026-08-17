@@ -1,0 +1,18 @@
+# Единый конец строки в репозитории: расхождение CRLF/LF делает диффы
+# нечитаемыми и ломает shell-скрипты в контейнерах.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.woff2 binary
+*.exe binary
+
+# Сгенерированные файлы не участвуют в статистике языков и сворачиваются в diff.
+frontend/pnpm-lock.yaml linguist-generated=true
+backend/*/internal/query/*.sql.go linguist-generated=true
+backend/*/internal/query/models.go linguist-generated=true
+backend/*/internal/query/querier.go linguist-generated=true
+backend/*/internal/query/db.go linguist-generated=true
+frontend/packages/components/src/components/index.ts linguist-generated=true
+frontend/packages/components/src/assets/scss/_breakpoints.scss linguist-generated=true
+frontend/packages/components/src/utils/_breakpoints.ts linguist-generated=true

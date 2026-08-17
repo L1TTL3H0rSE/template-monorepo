@@ -1,0 +1,25 @@
+{
+  "name": "@roleplay/frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:local": "pnpm --filter @roleplay/shared build && pnpm --filter @roleplay/api build && pnpm --filter @roleplay/components build:local",
+    "dev": "pnpm build:local && pnpm --filter @roleplay/web dev",
+    "dev:components": "pnpm --filter @roleplay/components dev",
+    "build": "pnpm build:local && pnpm --filter @roleplay/web build",
+    "storybook": "pnpm --filter @roleplay/components dev",
+    "build:storybook": "pnpm --filter @roleplay/components build-storybook",
+    "lint": "pnpm -r --if-present lint",
+    "lint:fix": "pnpm -r --if-present lint:fix",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

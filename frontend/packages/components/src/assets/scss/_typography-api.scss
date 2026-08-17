@@ -1,0 +1,198 @@
+// Типографика как placeholder-селекторы + миксин-фасад.
+//
+// Почему placeholder (%), а не миксин с телом: @extend склеивает все места
+// использования одного токена в ОДИН селектор в готовом CSS. Миксин копировал
+// бы 5 свойств в каждое место — тот же результат, но кратно больший бандл.
+//
+// Почему поверх стоит миксин typography($token), а не прямой @extend %h-4:
+// имя токена проверяется — неизвестный токен падает на сборке с @error, а не
+// молча ничего не делает.
+
+%h-1 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 4rem;
+  line-height: 4.625rem;
+  letter-spacing: -0.094rem;
+}
+
+%h-2 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 600;
+  font-size: 2.75rem;
+  line-height: 3.125rem;
+}
+
+%h-3 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 600;
+  font-size: 2rem;
+  line-height: 2.25rem;
+}
+
+%h-4 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+%h-5 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+}
+
+%h-6 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.25rem;
+}
+
+%h-st-1 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+%h-st-2 {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.02em;
+}
+
+%p-l {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+}
+
+%p-primary {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  letter-spacing: 0.009rem;
+}
+
+%p-m {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.013rem;
+}
+
+%p-s {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.013rem;
+}
+
+%captions {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.05rem;
+}
+
+%forms-input-l {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  letter-spacing: 0.0094rem;
+}
+
+%forms-input-m {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0125rem;
+}
+
+%forms-input-s {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  letter-spacing: 0.0125rem;
+}
+
+%forms-button-l {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.375rem;
+  letter-spacing: 0.0094rem;
+}
+
+%forms-button-m {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0125rem;
+}
+
+%forms-button-s {
+  font-family: Inter, Roboto, sans-serif;
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  letter-spacing: 0.0125rem;
+}
+
+@mixin typography($token) {
+  @if $token == h-1 {
+    @extend %h-1;
+  } @else if $token == h-2 {
+    @extend %h-2;
+  } @else if $token == h-3 {
+    @extend %h-3;
+  } @else if $token == h-4 {
+    @extend %h-4;
+  } @else if $token == h-5 {
+    @extend %h-5;
+  } @else if $token == h-6 {
+    @extend %h-6;
+  } @else if $token == h-st-1 {
+    @extend %h-st-1;
+  } @else if $token == h-st-2 {
+    @extend %h-st-2;
+  } @else if $token == p-l {
+    @extend %p-l;
+  } @else if $token == p-primary {
+    @extend %p-primary;
+  } @else if $token == p-m {
+    @extend %p-m;
+  } @else if $token == p-s {
+    @extend %p-s;
+  } @else if $token == captions {
+    @extend %captions;
+  } @else if $token == forms-input-l {
+    @extend %forms-input-l;
+  } @else if $token == forms-input-m {
+    @extend %forms-input-m;
+  } @else if $token == forms-input-s {
+    @extend %forms-input-s;
+  } @else if $token == forms-button-l {
+    @extend %forms-button-l;
+  } @else if $token == forms-button-m {
+    @extend %forms-button-m;
+  } @else if $token == forms-button-s {
+    @extend %forms-button-s;
+  } @else {
+    @error "Unknown typography token: #{$token}";
+  }
+}

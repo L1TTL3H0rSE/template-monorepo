@@ -1,0 +1,59 @@
+// Глобальные стили пакета. Подключаются один раз через `src/index.ts`, поэтому
+// приложению достаточно импортировать `@roleplay/components/styles`.
+@forward "./colors";
+@forward "./spacings";
+@forward "./typography";
+@forward "./effects";
+@forward "./transitions";
+@forward "./variables";
+@forward "./breakpoints";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font-family: inherit;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-06);
+}
+
+// Класс блокировки прокрутки; ставится utils/dom.ts под оверлеями.
+html.roleplay-layout-lock,
+body.roleplay-layout-lock {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}

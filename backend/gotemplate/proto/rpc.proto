@@ -1,0 +1,27 @@
+// Source of truth синхронных межсервисных вызовов gotemplate.
+//
+// Правило: subject и форму сообщения объявляет ВЛАДЕЛЕЦ данных. Потребитель
+// импортирует сгенерированный клиент владельца и не пишет строку subject у себя.
+//
+// Генератор в этом шаблоне не завендорен: pkg/rpc наполняется командой
+// `mage generate:rpc` после подключения выбранного кодогенератора.
+// Разбор паттерна — docs/backend/nats-contracts.md.
+syntax = "proto3";
+
+package roleplay.gotemplate.rpc.v1;
+
+option go_package = "roleplay/gotemplate/pkg/rpc;rpc";
+
+message ExampleReadOneRequest {
+  string id = 1;
+}
+
+message ExampleReadOneResponse {
+  string id = 1;
+  string name = 2;
+}
+
+// Subject: rpc.v1.example.read_one
+service Example {
+  rpc ReadOne(ExampleReadOneRequest) returns (ExampleReadOneResponse);
+}

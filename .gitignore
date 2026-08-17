@@ -1,0 +1,33 @@
+# Секреты и локальное окружение
+.env
+.env.local
+*.local
+
+# Go
+bin/
+go.work
+go.work.sum
+
+# Node
+node_modules/
+.pnpm-store/
+
+# Артефакты сборки фронтенда
+dist/
+.nuxt/
+.output/
+storybook-static/
+*.tsbuildinfo
+
+# Кеши и IDE
+.cache/
+.vite/
+.idea/
+.vscode/*
+!.vscode/launch.json
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+npm-debug.log*

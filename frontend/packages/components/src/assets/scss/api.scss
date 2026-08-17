@@ -1,0 +1,14 @@
+// SCSS API пакета.
+//
+// Этот файл автоматически подставляется в НАЧАЛО каждого SCSS-блока (см.
+// `css.preprocessorOptions.scss.additionalData` в vite.config.ts и в
+// nuxt.config.ts приложения). Поэтому в любом компоненте сразу доступны
+// миксин typography(), $breakpoint-*, $z-index-* и focus-ring — без импортов.
+//
+// Здесь только то, что НЕ порождает CSS: переменные, миксины, функции.
+// Правила (colors.scss, typography.scss) сюда не попадают — иначе они
+// продублировались бы в каждом собранном компоненте.
+@forward "./breakpoints";
+@forward "./variables";
+@forward "./typography-api";
+@forward "./effects";

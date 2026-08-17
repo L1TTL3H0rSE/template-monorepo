@@ -1,0 +1,24 @@
+// Source of truth асинхронных событий gotemplate.
+//
+// События versioned: `example.created.v1`. Несовместимое изменение формы — это
+// новая версия события, а не правка старой: у старого события уже есть
+// потребители, которые деплоятся отдельно.
+syntax = "proto3";
+
+package roleplay.gotemplate.events.v1;
+
+option go_package = "roleplay/gotemplate/pkg/events;events";
+
+// Subject: events.v1.example.created
+// JetStream stream: GOTEMPLATE_EXAMPLE_V1
+message ExampleCreated {
+  string id = 1;
+  string name = 2;
+  string occurred_at = 3;
+}
+
+// Subject: events.v1.example.deleted
+message ExampleDeleted {
+  string id = 1;
+  string occurred_at = 2;
+}

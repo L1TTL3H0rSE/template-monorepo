@@ -1,0 +1,28 @@
+{
+  "name": "@roleplay/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Общие flat-конфигурации ESLint для всех пакетов и приложений.",
+  "exports": {
+    ".": "./vue.js",
+    "./vue": "./vue.js",
+    "./nuxt": "./nuxt.js",
+    "./storybook": "./storybook.js",
+    "./prettier": "./shared/prettier.js"
+  },
+  "files": ["vue.js", "nuxt.js", "storybook.js", "shared"],
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "dependencies": {
+    "@eslint/js": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-prettier": "catalog:",
+    "eslint-plugin-storybook": "catalog:",
+    "eslint-plugin-vue": "catalog:",
+    "prettier": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vue-eslint-parser": "catalog:"
+  }
+}

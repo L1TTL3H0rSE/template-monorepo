@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1
+#
+# Сборка одного Go-сервиса из корня репозитория: в go.mod сервиса есть
+# `replace ../kit`, поэтому контекст обязан включать оба модуля.
+#
+# build-arg SERVICE_DIR указывает, какой сервис собирать.
+
+FROM golang:1.25-alpine AS build-base
+RUN apk add --no-cache git ca-certificates tzdata
+
+FROM build-base AS build
+WORKDIR /src
+
+# Общие модули копируются ДО развилки по SERVICE_DIR: слой одинаков для всех
+# сервисов и хранится однократно.
+COPY backend/kit /src/kit
+COPY backend/gotemplate /src/gotemplate
+
+# Зависимости скачиваются в cache-mount и копируются в слой. Cache-mount
+# переживает инвалидацию слоёв, поэтому пересборка после правки исходников не
+# ходит в сеть.
+RUN --mount=type=cache,target=/root/.cache/gomod,sharing=locked \
+    for module in /src/*/; do \
+      (cd "$module" && GOMODCACHE=/root/.cache/gomod go mod download) || exit 1; \
+    done && \
+    mkdir -p /go/pkg/mod && cp -a /root/.cache/gomod/. /go/pkg/mod/
+
+# ARG объявлен ЗДЕСЬ, а не в начале стадии: BuildKit кладёт значения
+# объявленных build-args в окружение каждого последующего RUN и включает их в
+# cache key. Объявление выше дало бы отдельный слой зависимостей на каждый
+# сервис вместо одного общего.
+ARG SERVICE_DIR
+WORKDIR /src/${SERVICE_DIR}
+
+# GOPROXY=off делает промах кеша модулей видимым: без него недостающий модуль
+# был бы молча докачан в per-service слой — ровно то дублирование, которое
+# общий слой выше и убирает.
+# Собираются ВСЕ команды сервиса, а не только ./cmd/app: одноразовый bootstrap
+# должен ехать в том же образе, что и сервис. Отдельный образ для засева
+# означает вторую сборку тех же зависимостей и риск, что версии разъедутся.
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    mkdir -p /artifacts/bin && \
+    for command in ./cmd/*/; do \
+      name="$(basename "$command")"; \
+      CGO_ENABLED=0 GOOS=linux GOPROXY=off go build -o "/artifacts/bin/${name}" "$command" || exit 1; \
+    done
+
+RUN mkdir -p /artifacts/migrations && \
+    if [ -d migrations ] && [ "$(ls -A migrations 2>/dev/null)" ]; then \
+      cp -r migrations/. /artifacts/migrations/; \
+    fi
+
+FROM alpine:3.21 AS run
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -S app && adduser -S -G app app
+
+WORKDIR /app
+COPY --from=build /artifacts/bin/ ./
+COPY --from=build /artifacts/migrations ./migrations
+
+EXPOSE 8080
+# Непривилегированный пользователь: процесс в контейнере не должен работать
+# от root даже при отсутствии известных уязвимостей. Отдельно это важно там,
+# где каталог образа монтируется на хост: файлы, созданные root'ом в
+# контейнере, потом не удаляются локально без sudo.
+USER app
+CMD ["./app"]
