@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"roleplay/kit/errorsx"
+	"starter/kit/errorsx"
 )
 
 // WriteDomainError переводит категорию доменной ошибки (errorsx.Err*) в

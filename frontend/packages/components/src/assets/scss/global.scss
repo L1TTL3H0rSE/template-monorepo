@@ -1,5 +1,5 @@
 // Глобальные стили пакета. Подключаются один раз через `src/index.ts`, поэтому
-// приложению достаточно импортировать `@roleplay/components/styles`.
+// приложению достаточно импортировать `@starter/components/styles`.
 @forward "./colors";
 @forward "./spacings";
 @forward "./typography";
@@ -51,8 +51,8 @@ select {
 }
 
 // Класс блокировки прокрутки; ставится utils/dom.ts под оверлеями.
-html.roleplay-layout-lock,
-body.roleplay-layout-lock {
+html.starter-layout-lock,
+body.starter-layout-lock {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;

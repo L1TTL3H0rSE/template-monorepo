@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	examplectrl "roleplay/gotemplate/internal/infra/http/controllers/example"
-	healthctrl "roleplay/gotemplate/internal/infra/http/controllers/health"
-	examplesvc "roleplay/gotemplate/internal/infra/services/example"
-	"roleplay/kit/ginx/middlewares"
-	kithttp "roleplay/kit/infra/http"
-	"roleplay/kit/ratelimiter"
+	examplectrl "starter/gotemplate/internal/infra/http/controllers/example"
+	healthctrl "starter/gotemplate/internal/infra/http/controllers/health"
+	examplesvc "starter/gotemplate/internal/infra/services/example"
+	"starter/kit/ginx/middlewares"
+	kithttp "starter/kit/infra/http"
+	"starter/kit/ratelimiter"
 )
 
 // Deps — явный список зависимостей роутера. Хендлеры не достают ничего из

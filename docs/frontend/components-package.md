@@ -241,8 +241,8 @@ document.documentElement.dataset.componentsBuildFingerprint;
 > Правка в `src` **не видна** потребителю, пока пакет не собран.
 
 ```bash
-pnpm --filter @roleplay/components build:local   # разово
-pnpm --filter @roleplay/components build:watch   # в цикле разработки
+pnpm --filter @starter/components build:local   # разово
+pnpm --filter @starter/components build:watch   # в цикле разработки
 ```
 
 Storybook при этом читает `src` напрямую, поэтому там изменения видны сразу.

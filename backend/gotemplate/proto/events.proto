@@ -5,9 +5,9 @@
 // потребители, которые деплоятся отдельно.
 syntax = "proto3";
 
-package roleplay.gotemplate.events.v1;
+package starter.gotemplate.events.v1;
 
-option go_package = "roleplay/gotemplate/pkg/events;events";
+option go_package = "starter/gotemplate/pkg/events;events";
 
 // Subject: events.v1.example.created
 // JetStream stream: GOTEMPLATE_EXAMPLE_V1

@@ -5,9 +5,9 @@
 // импорт ничего не ломает в рантайме и снимает скрытую зависимость от сборщика.
 import { computed, onScopeDispose, ref, watch } from "vue";
 import { defineStore } from "pinia";
-import { isCancelled } from "@roleplay/api/core";
-import { useOptimisticList, usePagination } from "@roleplay/shared/data";
-import { useSearchQuery } from "@roleplay/shared/search";
+import { isCancelled } from "@starter/api/core";
+import { useOptimisticList, usePagination } from "@starter/shared/data";
+import { useSearchQuery } from "@starter/shared/search";
 import type { Character, CharacterDraft } from "~/contracts/character";
 import { useApi } from "~/api/api";
 
@@ -16,7 +16,7 @@ import { useApi } from "~/api/api";
  *
  * Setup-форма (`defineStore("...", () => {...})`), а не options: она пишется
  * тем же кодом, что и композабл, и позволяет использовать общие композаблы
- * `@roleplay/shared` прямо внутри стора.
+ * `@starter/shared` прямо внутри стора.
  *
  * Стор владеет состоянием СПИСКА, а не отдельным персонажем. Форму
  * редактирования держит компонент: состояние, живущее ровно столько же, сколько

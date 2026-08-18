@@ -1,5 +1,5 @@
 {
-  "name": "@roleplay/components",
+  "name": "@starter/components",
   "version": "0.1.0",
   "type": "module",
   "module": "./dist/index.js",
@@ -40,10 +40,8 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@roleplay/eslint-config": "workspace:*",
-    "@storybook/addon-essentials": "catalog:",
+    "@starter/eslint-config": "workspace:*",
     "@storybook/addon-links": "catalog:",
-    "@storybook/vue3": "catalog:",
     "@storybook/vue3-vite": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",

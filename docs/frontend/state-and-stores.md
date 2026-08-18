@@ -37,7 +37,7 @@ export const useCharactersStore = defineStore("characters", () => {
 ```
 
 Setup-форма, а не options: она пишется тем же кодом, что и композабл, и
-позволяет использовать общие композаблы `@roleplay/shared` прямо внутри стора.
+позволяет использовать общие композаблы `@starter/shared` прямо внутри стора.
 В options-форме `usePagination()` вызвать негде.
 
 ## Ловушка: `reactive` разворачивает вложенные ref-ы

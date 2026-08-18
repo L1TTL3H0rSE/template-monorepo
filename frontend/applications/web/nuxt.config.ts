@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 
   modules: ["@pinia/nuxt", "@vueuse/nuxt"],
 
-  css: ["@roleplay/components/styles"],
+  css: ["@starter/components/styles"],
 
   vite: {
     css: {
@@ -14,7 +14,7 @@ export default defineNuxtConfig({
           // $breakpoint-* и focus-ring доступны в любом SFC приложения без
           // импорта. Без этой строки приложение вынуждено импортировать api в
           // каждом блоке стилей — и половина файлов забывает.
-          additionalData: `@use "@roleplay/components/scss/api.scss" as *;`,
+          additionalData: `@use "@starter/components/scss/api.scss" as *;`,
         },
       },
     },
@@ -22,7 +22,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: "Roleplay",
+      title: "Starter",
       meta: [
         {
           name: "description",

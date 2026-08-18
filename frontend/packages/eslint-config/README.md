@@ -1,19 +1,19 @@
-# @roleplay/eslint-config
+# @starter/eslint-config
 
 Общие flat-конфигурации ESLint. Один источник правил на весь workspace.
 
 | Экспорт | Для чего |
 |---|---|
-| `@roleplay/eslint-config` / `/vue` | Vue-пакеты |
-| `@roleplay/eslint-config/nuxt` | Nuxt-приложения |
-| `@roleplay/eslint-config/storybook` | Пакет с историями |
-| `@roleplay/eslint-config/prettier` | Настройки Prettier |
+| `@starter/eslint-config` / `/vue` | Vue-пакеты |
+| `@starter/eslint-config/nuxt` | Nuxt-приложения |
+| `@starter/eslint-config/storybook` | Пакет с историями |
+| `@starter/eslint-config/prettier` | Настройки Prettier |
 
 Использование в пакете:
 
 ```js
 // eslint.config.mjs
-import config from "@roleplay/eslint-config/storybook";
+import config from "@starter/eslint-config/storybook";
 
 export default config;
 ```

@@ -1,5 +1,5 @@
 {
-  "name": "@roleplay/eslint-config",
+  "name": "@starter/eslint-config",
   "version": "0.0.0",
   "private": true,
   "type": "module",

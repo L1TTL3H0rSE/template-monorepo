@@ -1,4 +1,4 @@
-# @roleplay/components
+# @starter/components
 
 Дизайн-система: визуальные примитивы, SCSS-токены и витрина Storybook.
 

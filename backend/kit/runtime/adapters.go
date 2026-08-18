@@ -3,7 +3,7 @@ package runtime
 import (
 	"context"
 
-	"roleplay/kit/infra"
+	"starter/kit/infra"
 )
 
 // InfraComponent адаптирует infra.InfrastructureService (Start /

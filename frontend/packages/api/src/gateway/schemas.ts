@@ -12,7 +12,7 @@ import { z } from "zod";
  * доменную модель приложения. Перевод в доменную форму делает адаптер.
  */
 export const exampleViewSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
   created_at: z.string(),
 });
@@ -35,12 +35,17 @@ export type ExampleSearchResponseDto = z.infer<
  *
  * Контекст в сообщении обязателен: `Invalid input` без указания эндпоинта не
  * помогает вообще.
+ *
+ * Параметр — САМА схема, а не её результат. Форма `schema: z.ZodType<T>` в
+ * zod 4 больше не выводит `T`: `Output` объявлен ковариантным и участвует в
+ * ограничении третьего параметра, из-за чего вывод откатывается к `unknown`, и
+ * вызывающий получает `dto` типа `unknown` вместо DTO.
  */
-export function parseResponse<T>(
-  schema: z.ZodType<T>,
+export function parseResponse<S extends z.ZodType>(
+  schema: S,
   payload: unknown,
   context: string,
-): T {
+): z.output<S> {
   const result = schema.safeParse(payload);
   if (!result.success) {
     throw new Error(

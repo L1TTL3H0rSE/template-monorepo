@@ -47,10 +47,10 @@ go test ./...
 
 `frontend/` — отдельный pnpm-workspace:
 
-- Node.js `>= 20`, pnpm `10.x`.
-- Nuxt 4, Vue 3.5, Pinia 3, TypeScript 5.9.
+- Node.js `>= 22.13`, pnpm `11.x`.
+- Nuxt 4, Vue 3.5, Pinia 4, TypeScript 5.9.
 - Стили — SCSS (`sass-embedded`).
-- Витрина — Storybook 8 с фреймворком `@storybook/vue3-vite`.
+- Витрина — Storybook 10 с фреймворком `@storybook/vue3-vite`.
 - Тесты — Vitest + happy-dom.
 - Валидация ответов — zod.
 

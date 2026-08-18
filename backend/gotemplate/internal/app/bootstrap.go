@@ -7,11 +7,11 @@ import (
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 
-	"roleplay/gotemplate/config"
-	"roleplay/gotemplate/internal/query"
-	"roleplay/kit/adapters/postgres"
-	"roleplay/kit/bootstrap"
-	"roleplay/kit/pglock"
+	"starter/gotemplate/config"
+	"starter/gotemplate/internal/query"
+	"starter/kit/adapters/postgres"
+	"starter/kit/bootstrap"
+	"starter/kit/pglock"
 )
 
 // seedNames — корневые данные, без которых стенд неработоспособен.

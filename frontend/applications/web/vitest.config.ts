@@ -30,9 +30,9 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
-      // См. комментарий в packages/components/vitest.config.ts: без этой
-      // строки .vue-файлы показывают ложные 100%.
-      experimentalAstAwareRemapping: true,
+      // См. комментарий в packages/components/vitest.config.ts: remapping
+      // обязателен, иначе .vue-файлы показывают ложные 100%. С vitest 4 он
+      // включён всегда и отдельной опции не имеет.
 
       include: ["app/**/*.{ts,vue}"],
       exclude: [

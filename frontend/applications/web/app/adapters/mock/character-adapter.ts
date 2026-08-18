@@ -70,7 +70,7 @@ function abortableDelay<T>(value: T, signal?: AbortSignal): Promise<T> {
 
 /**
  * Имя `AbortError` выбрано не случайно: ровно его отдаёт fetch, и его же
- * распознаёт `isCancelled` из `@roleplay/api/core`. Так вызывающий обрабатывает
+ * распознаёт `isCancelled` из `@starter/api/core`. Так вызывающий обрабатывает
  * отмену одинаково для обоих провайдеров.
  */
 class MockAbortError extends Error {

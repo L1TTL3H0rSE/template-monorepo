@@ -17,11 +17,11 @@ app/contracts/    доменные типы и интерфейсы портов
 Направление зависимостей всегда одно:
 
 ```text
-pages -> stores/composables -> contracts <- adapters <- @roleplay/api
+pages -> stores/composables -> contracts <- adapters <- @starter/api
 ```
 
 `contracts` не зависит ни от чего. Компоненты **никогда** не импортируют
-`@roleplay/api` напрямую.
+`@starter/api` напрямую.
 
 ## `app/components` против `packages/components`
 
@@ -49,7 +49,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 как Vue начал разрешать дерево.
 
 Здесь же приложение передаёт пакету то, чего пакет не должен знать сам:
-компонент ссылки конкретного роутера. Благодаря этому `@roleplay/components` не
+компонент ссылки конкретного роутера. Благодаря этому `@starter/components` не
 зависит от Nuxt.
 
 ## Runtime config
@@ -78,7 +78,7 @@ vite: {
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "@roleplay/components/scss/api.scss" as *;`,
+        additionalData: `@use "@starter/components/scss/api.scss" as *;`,
       },
     },
   },
@@ -135,14 +135,14 @@ Nuxt авто-импортирует `ref`, `computed`, `useRoute`, содерж
 
 - в конфигурации ESLint отключён `no-undef` — типы приходят из `.nuxt/`, а не из
   импортов;
-- пакеты из workspace (`@roleplay/components`) импортируются **явно**: они не
+- пакеты из workspace (`@starter/components`) импортируются **явно**: они не
   входят в авто-импорт Nuxt.
 
 ## Локальные пакеты нужно собрать
 
 ```bash
 pnpm build:local        # из frontend/
-pnpm --filter @roleplay/web dev
+pnpm --filter @starter/web dev
 ```
 
 Пакеты экспортируют `dist`, поэтому без сборки приложение увидит пустые модули.

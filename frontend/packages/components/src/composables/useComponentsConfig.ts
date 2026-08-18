@@ -4,7 +4,7 @@ import { inject, type Component, type InjectionKey } from "vue";
  * Настройки пакета, которые приложение задаёт один раз при установке плагина.
  *
  * Пакет не знает про роутер приложения: компонент ссылки приходит снаружи.
- * Иначе `@roleplay/components` пришлось бы собирать отдельно под Nuxt, под
+ * Иначе `@starter/components` пришлось бы собирать отдельно под Nuxt, под
  * Storybook и под любой третий контекст.
  */
 export type ComponentsPluginOptions = {
@@ -15,7 +15,7 @@ export type ComponentsPluginOptions = {
 };
 
 export const componentsConfigKey: InjectionKey<ComponentsPluginOptions> =
-  Symbol("roleplay-components-config");
+  Symbol("starter-components-config");
 
 const fallbackConfig: ComponentsPluginOptions = {};
 

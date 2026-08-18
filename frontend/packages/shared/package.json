@@ -1,5 +1,5 @@
 {
-  "name": "@roleplay/shared",
+  "name": "@starter/shared",
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,
@@ -39,7 +39,7 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@roleplay/eslint-config": "workspace:*",
+    "@starter/eslint-config": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",

@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 
-	"roleplay/kit/ginx"
+	"starter/kit/ginx"
 )
 
 // GatewayRequireAuth — единственное место проверки аутентификации во внутреннем

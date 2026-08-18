@@ -1,3 +1,3 @@
-import config from "@roleplay/eslint-config/nuxt";
+import config from "@starter/eslint-config/nuxt";
 
 export default config;

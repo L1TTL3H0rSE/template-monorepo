@@ -21,7 +21,7 @@
 | `api` | HTTP, форму JSON бэкенда | Vue, домен приложения |
 | `web` | всё перечисленное | — |
 
-Компоненты приложения не импортируют `@roleplay/api` напрямую — только через
+Компоненты приложения не импортируют `@starter/api` напрямую — только через
 `app/contracts` и `app/adapters`.
 
 ## Стили
@@ -101,7 +101,7 @@ src/utils/_breakpoints.ts
 ```
 
 Правятся через источник (`src/breakpoints.json`, каталог `src/components`) и
-`pnpm --filter @roleplay/components generate`.
+`pnpm --filter @starter/components generate`.
 
 Генератор обязан быть детерминированным: сортировка с явной локалью `"en"`,
 никакой зависимости от порядка `fs.readdir`, проверка коллизий по регистру.
@@ -129,7 +129,7 @@ Nuxt) — [`docs/frontend/testing.md`](../docs/frontend/testing.md).
 При изменении `packages/*` дополнительно собери потребителя:
 
 ```bash
-pnpm --filter @roleplay/web build
+pnpm --filter @starter/web build
 ```
 
 Не коммить `.nuxt`, `.output`, `dist`, `storybook-static`.

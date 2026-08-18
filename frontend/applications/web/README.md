@@ -1,4 +1,4 @@
-# @roleplay/web
+# @starter/web
 
 Nuxt-приложение проекта.
 
@@ -18,11 +18,11 @@ app/contracts/    доменные типы и интерфейсы портов
 Направление зависимостей всегда одно:
 
 ```text
-pages -> stores/composables -> contracts <- adapters <- @roleplay/api
+pages -> stores/composables -> contracts <- adapters <- @starter/api
 ```
 
 `contracts` не зависит ни от чего. Компоненты никогда не импортируют
-`@roleplay/api` напрямую.
+`@starter/api` напрямую.
 
 ## Команды
 

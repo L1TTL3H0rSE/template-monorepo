@@ -16,9 +16,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 
-	"roleplay/gotemplate/internal/domain/dtos"
-	"roleplay/gotemplate/internal/query"
-	"roleplay/kit/errorsx"
+	"starter/gotemplate/internal/domain/dtos"
+	"starter/gotemplate/internal/query"
+	"starter/kit/errorsx"
 )
 
 type Service struct {

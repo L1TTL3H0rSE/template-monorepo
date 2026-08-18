@@ -1,4 +1,4 @@
-const LOCK_CLASS = "roleplay-layout-lock";
+const LOCK_CLASS = "starter-layout-lock";
 
 /** Счётчик блокировок: два открытых оверлея не должны разблокировать друг друга. */
 let lockCount = 0;

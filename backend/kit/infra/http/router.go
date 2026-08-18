@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"roleplay/kit/ginx/middlewares"
+	"starter/kit/ginx/middlewares"
 )
 
 // RouterOptions настраивает стандартный движок gin.

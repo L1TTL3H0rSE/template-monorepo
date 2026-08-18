@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"roleplay/gotemplate/internal/app"
+	"starter/gotemplate/internal/app"
 )
 
 // main держит ровно одну обязанность: связать сигналы ОС с контекстом и отдать

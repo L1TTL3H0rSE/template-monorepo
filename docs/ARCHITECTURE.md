@@ -6,12 +6,12 @@
 ## Путь пользовательского запроса
 
 ```text
-Nuxt-приложение (@roleplay/web)
+Nuxt-приложение (@starter/web)
   -> app/pages          экран, только отображение и события
   -> app/stores | app/composables   состояние
   -> app/contracts      ПОРТ: интерфейс, который знает приложение
   -> app/adapters       реализация порта: http или mock
-  -> @roleplay/api      ApiClient: базовый URL, токен, конверт {error, data}
+  -> @starter/api      ApiClient: базовый URL, токен, конверт {error, data}
   -> HTTP
   -> Go-сервис /api/v1/...
      -> kit/infra/http.NewEngine     Recovery, RequestID, access log, user context
@@ -78,10 +78,10 @@ proto/                    source of truth межсервисных контра�
 ## Устройство фронтенда
 
 ```text
-@roleplay/components   визуальные примитивы, токены, Storybook
-@roleplay/shared       headless-состояние (без стилей и компонентов)
-@roleplay/api          транспорт и схемы формы JSON
-@roleplay/web          приложение: contracts -> adapters -> stores -> pages
+@starter/components   визуальные примитивы, токены, Storybook
+@starter/shared       headless-состояние (без стилей и компонентов)
+@starter/api          транспорт и схемы формы JSON
+@starter/web          приложение: contracts -> adapters -> stores -> pages
 ```
 
 Направление зависимостей одностороннее:

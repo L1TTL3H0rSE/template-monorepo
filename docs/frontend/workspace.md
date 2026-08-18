@@ -6,12 +6,12 @@ frontend/
 ├─ pnpm-lock.yaml        ОДИН lock-файл на весь workspace
 ├─ tsconfig.base.json    общий strict-базис
 ├─ applications/
-│  └─ web/               @roleplay/web
+│  └─ web/               @starter/web
 └─ packages/
-   ├─ components/        @roleplay/components
-   ├─ shared/            @roleplay/shared
-   ├─ api/               @roleplay/api
-   └─ eslint-config/     @roleplay/eslint-config
+   ├─ components/        @starter/components
+   ├─ shared/            @starter/shared
+   ├─ api/               @starter/api
+   └─ eslint-config/     @starter/eslint-config
 ```
 
 ## Границы пакетов
@@ -37,8 +37,8 @@ frontend/
 
 ```yaml
 catalog:
-  vue: ^3.5.18
-  pinia: ^3.0.3
+  vue: ^3.5.41
+  pinia: ^4.0.3
 ```
 
 ```json
@@ -55,11 +55,31 @@ Catalog делает такую ситуацию невозможной: вер�
 Внутренние зависимости — через `workspace:*`:
 
 ```json
-{ "dependencies": { "@roleplay/components": "workspace:*" } }
+{ "dependencies": { "@starter/components": "workspace:*" } }
 ```
 
 Один lock-файл: `frontend/pnpm-lock.yaml`. Вложенные lock-файлы в пакетах не
 создаются — они дают тот самый второй экземпляр Vue.
+
+Пол диапазона в каталоге держится равным установленной версии: каталог объявлен
+источником истины о версии, и заниженный пол разрешился бы в другое при
+установке без lock-файла.
+
+## Зависимости с build-скриптами
+
+Рядом с каталогом в `pnpm-workspace.yaml` лежат два списка:
+
+```yaml
+onlyBuiltDependencies:      # чей postinstall выполняем
+  - esbuild
+ignoredBuiltDependencies:   # чей — осознанно не выполняем
+  - '@parcel/watcher'
+```
+
+Оба обязаны быть полными. Начиная с pnpm 11 пакет с `postinstall`, о котором не
+принято явного решения, роняет `pnpm install` (`ERR_PNPM_IGNORED_BUILDS`), а не
+печатает предупреждение. Поэтому новая зависимость, которая что-то собирает при
+установке, требует записи в один из этих списков в том же изменении.
 
 ## Пакеты экспортируют `dist`
 
@@ -106,10 +126,10 @@ pnpm build:local   # shared -> api -> components, в порядке зависи
 ## Добавление пакета
 
 1. Каталог в `packages/<имя>`.
-2. `package.json` с `"name": "@roleplay/<имя>"` и `exports` на `dist`.
+2. `package.json` с `"name": "@starter/<имя>"` и `exports` на `dist`.
 3. `tsconfig.json`, расширяющий `../../tsconfig.base.json`.
 4. `eslint.config.mjs`, реэкспортирующий общий конфиг.
-5. Зависимость `"@roleplay/<имя>": "workspace:*"` у потребителя.
+5. Зависимость `"@starter/<имя>": "workspace:*"` у потребителя.
 6. `pnpm install`.
 7. Пакет в цепочку `build:local`, если от него зависят другие.
 8. `README.md`: что внутри и чего внутри быть не должно.
@@ -126,5 +146,5 @@ pnpm storybook
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm --filter @roleplay/web <script>
+pnpm --filter @starter/web <script>
 ```

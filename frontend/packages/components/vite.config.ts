@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import { defineConfig } from "vite";
+import type { UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
 /**
@@ -11,7 +11,9 @@ import vue from "@vitejs/plugin-vue";
  * при отладке видно, свежий ли бандл загрузил потребитель. Иначе «правка не
  * применилась» и «правка неверна» выглядят одинаково.
  */
-function computeBuildFingerprint(dir = resolve(__dirname, "src")): string {
+function computeBuildFingerprint(
+  dir = resolve(import.meta.dirname, "src"),
+): string {
   const hash = createHash("sha256");
 
   const walk = (current: string) => {
@@ -29,19 +31,18 @@ function computeBuildFingerprint(dir = resolve(__dirname, "src")): string {
   return hash.digest("hex").slice(0, 12);
 }
 
-export default defineConfig({
+const config: UserConfig = {
   define: {
     __COMPONENTS_BUILD_FINGERPRINT__: JSON.stringify(computeBuildFingerprint()),
   },
 
   resolve: {
-    alias: { "@": resolve(__dirname, "src") },
+    alias: { "@": resolve(import.meta.dirname, "src") },
   },
 
   css: {
     preprocessorOptions: {
       scss: {
-        api: "modern-compiler",
         // SCSS API пакета подставляется в начало каждого блока стилей: миксин
         // typography() и $breakpoint-* доступны без импорта в каждом SFC.
         additionalData: `@use "@/assets/scss/api.scss" as *;`,
@@ -51,7 +52,7 @@ export default defineConfig({
 
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(import.meta.dirname, "src/index.ts"),
       formats: ["es"],
       // Имя выходного файла обязано совпадать с index.js: src/index.ts —
       // одновременно точка входа пакета и барель, на который ссылаются
@@ -85,4 +86,6 @@ export default defineConfig({
   },
 
   plugins: [vue()],
-});
+};
+
+export default config;

@@ -23,7 +23,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"roleplay/gotemplate/internal/app"
+	"starter/gotemplate/internal/app"
 )
 
 func main() {

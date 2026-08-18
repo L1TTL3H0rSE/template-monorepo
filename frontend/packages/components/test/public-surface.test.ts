@@ -37,7 +37,7 @@ const ALLOWED_EXPORTS = [
   "componentsPlugin",
 ].sort();
 
-describe("публичная поверхность @roleplay/components", () => {
+describe("публичная поверхность @starter/components", () => {
   it("совпадает с reviewed allowlist", () => {
     const actual = Object.keys(publicApi).sort();
 

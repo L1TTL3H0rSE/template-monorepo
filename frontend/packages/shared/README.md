@@ -1,21 +1,21 @@
-# @roleplay/shared
+# @starter/shared
 
 Headless-состояние и утилиты интеграции. **Ни одного компонента и ни одного
 стиля.**
 
-Разделение с `@roleplay/components` не косметическое: визуальный примитив и
+Разделение с `@starter/components` не косметическое: визуальный примитив и
 состояние живут разными жизнями. Кнопка меняется при редизайне, дебаунс поиска —
 нет. Смешав их, любой редизайн начинает трогать логику загрузки данных.
 
-Пакет не зависит ни от `@roleplay/components`, ни от Nuxt. Vue приходит как peer.
+Пакет не зависит ни от `@starter/components`, ни от Nuxt. Vue приходит как peer.
 
 ## Точки входа
 
 | Импорт | Содержит |
 |---|---|
-| `@roleplay/shared/data` | `useAsyncState`, `usePagination` |
-| `@roleplay/shared/forms` | `useFormState` |
-| `@roleplay/shared/search` | `useSearchQuery` |
+| `@starter/shared/data` | `useAsyncState`, `usePagination` |
+| `@starter/shared/forms` | `useFormState` |
+| `@starter/shared/search` | `useSearchQuery` |
 
 Подпуть, а не один общий барель: приложение, которому нужна только форма, не
 тянет в бандл всё остальное.

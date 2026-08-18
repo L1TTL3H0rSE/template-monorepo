@@ -4,7 +4,7 @@
 
 | Что | Как | Пример |
 |---|---|---|
-| Модуль | `roleplay/<имя>` | `roleplay/gotemplate` |
+| Модуль | `starter/<имя>` | `starter/gotemplate` |
 | Каталог сервиса | `go<домен>` | `gocharacters` |
 | Пакет | одно слово, строчными | `example`, `dtos`, `query` |
 | Экспортируемое | `PascalCase` | `GetByID`, `ExampleView` |
@@ -37,7 +37,7 @@ internal/common/                     ✘ то же самое
 
 | Что | Как | Пример |
 |---|---|---|
-| Пакет | `@roleplay/<имя>` | `@roleplay/components` |
+| Пакет | `@starter/<имя>` | `@starter/components` |
 | Компонент (файл и имя) | `PascalCase` | `TextField.vue` |
 | Композабл | `use<Что>` | `useSearchQuery` |
 | Стор | `use<Что>Store` | `useCharactersStore` |

@@ -29,7 +29,7 @@ COPY frontend/applications ./applications
 # Пакеты экспортируют dist, поэтому их сборка обязана предшествовать сборке
 # приложения. Порядок задан скриптом build:local и повторяет граф зависимостей.
 RUN pnpm build:local && \
-    pnpm --filter @roleplay/web build
+    pnpm --filter @starter/web build
 
 FROM node:22-alpine AS run
 RUN addgroup -S app && adduser -S -G app app

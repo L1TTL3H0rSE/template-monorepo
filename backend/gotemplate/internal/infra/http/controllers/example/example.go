@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"roleplay/gotemplate/internal/domain/dtos"
-	examplesvc "roleplay/gotemplate/internal/infra/services/example"
-	"roleplay/kit/ginx"
+	"starter/gotemplate/internal/domain/dtos"
+	examplesvc "starter/gotemplate/internal/infra/services/example"
+	"starter/kit/ginx"
 )
 
 const defaultPageSize = 20

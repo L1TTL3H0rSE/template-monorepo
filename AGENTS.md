@@ -53,8 +53,8 @@ ADR **не считается принятым**, пока его состоян
   только `pkg/`.
 - Сервис не читает таблицы другого сервиса.
 - Компонент дизайн-системы не знает про HTTP, роутер и домен.
-- `@roleplay/shared` не знает про стили и компоненты.
-- Компоненты приложения не импортируют `@roleplay/api` напрямую — только через
+- `@starter/shared` не знает про стили и компоненты.
+- Компоненты приложения не импортируют `@starter/api` напрямую — только через
   `app/contracts` и `app/adapters`.
 
 ## Генерируемые файлы
@@ -72,7 +72,7 @@ frontend/packages/components/src/utils/_breakpoints.ts
 
 ```bash
 go run github.com/magefile/mage generate:sqlc
-pnpm --filter @roleplay/components generate
+pnpm --filter @starter/components generate
 ```
 
 ## Проверки
@@ -97,7 +97,7 @@ pnpm build:local && pnpm lint && pnpm typecheck && pnpm test
 
 - новый слой в Go-сервисе (репозиторий, доменная модель);
 - новый публичный маршрут вне `GatewayRequireAuth`;
-- новый экспорт в публичной поверхности `@roleplay/components`;
+- новый экспорт в публичной поверхности `@starter/components`;
 - изменение межсервисного контракта;
 - новая зависимость в `catalog:`;
 - изменение границ пакетов.

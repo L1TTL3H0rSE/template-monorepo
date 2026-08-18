@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"roleplay/kit/ginx"
+	"starter/kit/ginx"
 )
 
 type Handler struct {

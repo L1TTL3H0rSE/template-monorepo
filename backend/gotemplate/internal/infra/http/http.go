@@ -7,11 +7,11 @@ import (
 	"net"
 	"net/http"
 
-	"roleplay/kit/infra"
-	kithttp "roleplay/kit/infra/http"
+	"starter/kit/infra"
+	kithttp "starter/kit/infra/http"
 )
 
-// @title       Roleplay gotemplate API
+// @title       Starter gotemplate API
 // @version     1.0
 // @description Эталонный микросервис шаблона.
 

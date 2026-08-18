@@ -47,7 +47,7 @@ pnpm test
 Если менялись `packages/*`:
 
 ```bash
-pnpm --filter @roleplay/web build   # потребитель должен собираться
+pnpm --filter @starter/web build   # потребитель должен собираться
 ```
 
 Если менялись компоненты:
@@ -108,7 +108,7 @@ node scripts/init-project.mjs --display-name "Acme Test" --slug acme-test \
 повторный запуск не меняет рабочее дерево:
 
 ```bash
-pnpm --filter @roleplay/components generate
+pnpm --filter @starter/components generate
 git status --short   # пусто
 ```
 
@@ -134,12 +134,13 @@ git status --short   # пусто
 pnpm test:coverage
 ```
 
-Цифры имеют смысл только при `coverage.experimentalAstAwareRemapping: true`:
-без него `.vue`, который лишь импортировали, показывает 100%. Разбор —
+Цифры имеют смысл только при AST-aware remapping: без него `.vue`, который
+лишь импортировали, показывает 100%. С vitest 4 remapping включён всегда;
+отдельной опции, которую можно забыть, больше нет. Разбор —
 [`frontend/testing.md`](../frontend/testing.md).
 
-Порог не подгоняется под текущую цифру. Упавшее после включения remapping
-покрытие таким и было — просто это не было видно.
+Порог не подгоняется под текущую цифру. Покрытие, упавшее при честном
+remapping, таким и было — просто это не было видно.
 
 ## Чек-лист завершения
 

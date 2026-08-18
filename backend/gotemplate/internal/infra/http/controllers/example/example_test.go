@@ -11,9 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"roleplay/gotemplate/internal/domain/dtos"
-	examplesvc "roleplay/gotemplate/internal/infra/services/example"
-	"roleplay/kit/errorsx"
+	"starter/gotemplate/internal/domain/dtos"
+	examplesvc "starter/gotemplate/internal/infra/services/example"
+	"starter/kit/errorsx"
 )
 
 // stubService реализует локальный интерфейс service. Ради него интерфейс и

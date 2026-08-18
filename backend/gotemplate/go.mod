@@ -1,4 +1,4 @@
-module roleplay/gotemplate
+module starter/gotemplate
 
 go 1.25.0
 
@@ -8,7 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/magefile/mage v1.17.2
 	go.uber.org/zap v1.28.0
-	roleplay/kit v0.0.0
+	starter/kit v0.0.0
 )
 
 require (
@@ -56,4 +56,4 @@ require (
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
 
-replace roleplay/kit => ../kit
+replace starter/kit => ../kit

@@ -135,7 +135,7 @@ forms-button-*   подписи кнопок
 представления:
 
 ```bash
-pnpm --filter @roleplay/components generate
+pnpm --filter @starter/components generate
 ```
 
 ```text

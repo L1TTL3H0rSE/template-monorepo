@@ -78,7 +78,7 @@ Object.entries(breakpoints).sort(
 Генератор детерминирован, если повторный запуск не меняет рабочее дерево:
 
 ```bash
-pnpm --filter @roleplay/components generate
+pnpm --filter @starter/components generate
 git status --short   # пусто
 ```
 

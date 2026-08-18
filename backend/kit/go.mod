@@ -1,4 +1,4 @@
-module roleplay/kit
+module starter/kit
 
 go 1.25.0
 

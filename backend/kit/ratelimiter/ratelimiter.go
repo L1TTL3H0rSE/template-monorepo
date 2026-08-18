@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"roleplay/kit/cache"
+	"starter/kit/cache"
 )
 
 // Config — блок конфигурации лимитера (префикс RATELIMIT_).

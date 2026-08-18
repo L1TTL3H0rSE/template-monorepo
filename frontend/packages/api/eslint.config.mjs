@@ -1,3 +1,3 @@
-import config from "@roleplay/eslint-config/vue";
+import config from "@starter/eslint-config/vue";
 
 export default config;

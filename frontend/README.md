@@ -7,12 +7,12 @@ frontend/
 ├─ pnpm-workspace.yaml   пакеты + catalog версий
 ├─ tsconfig.base.json    общий strict-базис
 ├─ applications/
-│  └─ web/               Nuxt-приложение (@roleplay/web)
+│  └─ web/               Nuxt-приложение (@starter/web)
 └─ packages/
-   ├─ components/        дизайн-система + Storybook (@roleplay/components)
-   ├─ shared/            headless-состояние (@roleplay/shared)
-   ├─ api/               транспорт и схемы (@roleplay/api)
-   └─ eslint-config/     общие правила (@roleplay/eslint-config)
+   ├─ components/        дизайн-система + Storybook (@starter/components)
+   ├─ shared/            headless-состояние (@starter/shared)
+   ├─ api/               транспорт и схемы (@starter/api)
+   └─ eslint-config/     общие правила (@starter/eslint-config)
 ```
 
 ## Команды (из `frontend/`)
@@ -27,7 +27,7 @@ pnpm typecheck
 pnpm test
 ```
 
-Фильтр по пакету: `pnpm --filter @roleplay/web <script>`.
+Фильтр по пакету: `pnpm --filter @starter/web <script>`.
 
 ## Два правила, которые ломают больше всего времени
 

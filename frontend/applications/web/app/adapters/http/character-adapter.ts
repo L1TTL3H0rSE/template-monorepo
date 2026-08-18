@@ -1,10 +1,10 @@
-import type { ApiClient } from "@roleplay/api/core";
+import type { ApiClient } from "@starter/api/core";
 import {
   exampleSearchResponseSchema,
   exampleViewSchema,
   parseResponse,
   type ExampleViewDto,
-} from "@roleplay/api/gateway";
+} from "@starter/api/gateway";
 import type {
   Character,
   CharacterApi,

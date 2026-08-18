@@ -86,7 +86,7 @@ function toCharacter(dto: ExampleViewDto): Character {
 
 ## Транспорт
 
-`@roleplay/api/core` — `ApiClient`. Он владеет тем, что иначе дублируется:
+`@starter/api/core` — `ApiClient`. Он владеет тем, что иначе дублируется:
 
 - базовый URL;
 - подстановка токена;
@@ -134,7 +134,7 @@ if (value === undefined || value === null || value === "") continue;
 предикат:
 
 ```ts
-import { isCancelled } from "@roleplay/api/core";
+import { isCancelled } from "@starter/api/core";
 
 catch (caught) {
   if (isCancelled(caught)) return;   // молча
@@ -247,7 +247,7 @@ Mock-адаптер режет массив в памяти — потому ч�
 ## Добавление домена
 
 1. Тип и интерфейс в `app/contracts/<домен>.ts`, поле в `WebApi`.
-2. Схемы транспортных DTO в `@roleplay/api/gateway`.
+2. Схемы транспортных DTO в `@starter/api/gateway`.
 3. `app/adapters/http/<домен>-adapter.ts`.
 4. `app/adapters/mock/<домен>-adapter.ts`.
 5. Оба в `app/api/api.ts`.

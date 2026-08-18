@@ -9,7 +9,7 @@ const links = [
   <div class="layout">
     <header class="layout__header">
       <div class="container layout__header-inner">
-        <NuxtLink class="layout__brand" to="/">Roleplay</NuxtLink>
+        <NuxtLink class="layout__brand" to="/">Starter</NuxtLink>
         <nav class="layout__nav">
           <NuxtLink
             v-for="link in links"

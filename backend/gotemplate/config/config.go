@@ -3,10 +3,10 @@ package config
 import (
 	"context"
 
-	"roleplay/kit/adapters/postgres"
-	"roleplay/kit/bootstrap"
-	"roleplay/kit/configloader"
-	kithttp "roleplay/kit/infra/http"
+	"starter/kit/adapters/postgres"
+	"starter/kit/bootstrap"
+	"starter/kit/configloader"
+	kithttp "starter/kit/infra/http"
 )
 
 // Config сервиса — это встроенный bootstrap.Common плюс доменные блоки.

@@ -99,7 +99,7 @@ function verifySourceConsistency(metadata) {
   // Связи между slug и repositoryName намеренно НЕТ: имя репозитория на
   // хостинге и идентичность внутри файлов — разные вещи, и требование
   // «repositoryName начинается со slug» ложно уже для этого шаблона
-  // (template-monorepo против roleplay).
+  // (template-monorepo против starter).
   for (const [field, value] of Object.entries({
     slug,
     repositoryName,

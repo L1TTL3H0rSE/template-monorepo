@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
-	"roleplay/kit/ginx"
-	"roleplay/kit/ratelimiter"
+	"starter/kit/ginx"
+	"starter/kit/ratelimiter"
 )
 
 // RateLimit ограничивает запросы после успешной аутентификации.

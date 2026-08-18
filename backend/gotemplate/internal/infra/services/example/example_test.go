@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"roleplay/gotemplate/internal/domain/dtos"
-	"roleplay/gotemplate/internal/query"
-	"roleplay/kit/errorsx"
+	"starter/gotemplate/internal/domain/dtos"
+	"starter/gotemplate/internal/query"
+	"starter/kit/errorsx"
 )
 
 // fakeQuerier — тестовый шов сервиса. Он реализует сгенерированный

@@ -1,6 +1,6 @@
 package example
 
-import "roleplay/gotemplate/internal/domain/dtos"
+import "starter/gotemplate/internal/domain/dtos"
 
 // Файл response.go остаётся в контроллере: это типизированные схемы swagger,
 // специфичные для одного HTTP-эндпоинта. Отдельный request.go, наоборот, не

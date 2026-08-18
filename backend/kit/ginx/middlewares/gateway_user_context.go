@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"roleplay/kit/ginx"
+	"starter/kit/ginx"
 )
 
 // GatewayUserContext собирает доверенный контекст пользователя из заголовков

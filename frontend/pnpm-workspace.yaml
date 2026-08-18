@@ -2,63 +2,81 @@ packages:
   - applications/*
   - packages/*
 
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: true
+
 # Catalog — единственное место, где записана версия общей зависимости.
 # В package.json пакета пишется `"vue": "catalog:"`, поэтому обновление версии
 # делается одной правкой здесь, а не грепом по всем манифестам.
+#
+# Пол диапазона держится равным установленной версии. Заниженный пол — не
+# безобидная неточность: каталог объявлен источником истины о версии, а
+# `pnpm install` без lock-файла разрешил бы его во что-то другое, и «версия из
+# каталога» перестала бы совпадать с проверенной.
 catalog:
   # ядро
   typescript: ^5.9.3
-  '@types/node': ^22.15.3
-  nuxt: ^4.0.3
-  vue: ^3.5.18
-  vue-router: ^4.5.1
-  pinia: ^3.0.3
-  '@pinia/nuxt': ^0.11.2
-  '@vueuse/core': ^13.5.0
-  '@vueuse/nuxt': ^13.5.0
+  '@types/node': ^26.2.0
+  nuxt: ^4.5.2
+  vue: ^3.5.41
+  # Мажор роутера диктует nuxt, а не приложение: приложение vue-router не
+  # импортирует, зато nuxt объявляет его своей зависимостью и регистрирует
+  # плагин `vue-router/volar/sfc-route-blocks` в генерируемом tsconfig.
+  # Разошедшиеся мажоры дают две копии роутера в дереве и красный плагин у
+  # vue-tsc. Обновляется вместе с nuxt.
+  vue-router: ^5.2.0
+  pinia: ^4.0.3
+  '@pinia/nuxt': ^1.0.2
+  '@vueuse/core': ^14.4.0
+  '@vueuse/nuxt': ^14.4.0
 
   # стили
-  sass: ^1.89.2
-  sass-embedded: ^1.89.2
+  sass-embedded: ^1.102.0
 
   # транспорт и данные
-  zod: ^3.25.76
-  date-fns: ^4.1.0
+  zod: ^4.4.3
 
   # сборка пакетов
-  vite: ^6.3.5
-  '@vitejs/plugin-vue': ^5.2.4
-  vue-tsc: ^2.2.10
-  unplugin-auto-import: ^19.3.0
+  vite: ^8.2.1
+  '@vitejs/plugin-vue': ^6.0.8
+  vue-tsc: ^3.3.10
   resolve-tspaths: ^0.8.23
 
   # storybook
-  storybook: ^8.6.14
-  # Рендерер объявляется явно, а не берётся транзитивно из vue3-vite: истории
-  # импортируют Meta/StoryObj именно отсюда, а pnpm не поднимает транзитивные
-  # пакеты в node_modules потребителя.
-  '@storybook/vue3': ^8.6.14
-  '@storybook/vue3-vite': ^8.6.14
-  '@storybook/addon-essentials': ^8.6.14
-  '@storybook/addon-links': ^8.6.14
-  eslint-plugin-storybook: ^0.12.0
+  storybook: ^10.5.8
+  # Рендерер (`@storybook/vue3`) отдельной записи не имеет: с 10.x правило
+  # `storybook/no-renderer-packages` запрещает импортировать его напрямую, а
+  # framework-пакет реэкспортирует весь его API. Прямых импортов нет — значит
+  # нет и причины держать зависимость, которую pnpm не поднял бы транзитивно.
+  '@storybook/vue3-vite': ^10.5.8
+  '@storybook/addon-links': ^10.5.8
+  eslint-plugin-storybook: ^10.5.8
 
   # качество
-  eslint: ^9.30.1
-  '@eslint/js': ^9.30.1
-  typescript-eslint: ^8.36.0
-  eslint-plugin-vue: ^10.2.0
-  vue-eslint-parser: ^10.1.4
-  eslint-config-prettier: ^10.1.5
-  eslint-plugin-prettier: ^5.5.1
-  prettier: ^3.6.2
-  '@nuxt/eslint-config': ^1.5.2
+  eslint: ^10.8.1
+  '@eslint/js': ^10.0.1
+  typescript-eslint: ^8.67.0
+  eslint-plugin-vue: ^10.10.0
+  vue-eslint-parser: ^10.4.1
+  eslint-config-prettier: ^10.1.8
+  eslint-plugin-prettier: ^5.5.6
+  prettier: ^3.9.6
 
   # тесты
-  vitest: ^3.2.4
-  '@vitest/coverage-v8': ^3.2.4
-  '@vue/test-utils': ^2.4.6
-  happy-dom: ^18.0.1
+  vitest: ^4.1.10
+  '@vitest/coverage-v8': ^4.1.10
+  '@vue/test-utils': ^2.4.11
+  happy-dom: ^20.11.2
 
+# pnpm 11 считает ошибкой ЛЮБОЙ build-скрипт зависимости, о котором не принято
+# явного решения. Поэтому здесь два списка, и оба обязаны быть полными: молчание
+# больше не значит «не собирать», оно роняет установку.
 onlyBuiltDependencies:
   - esbuild
+
+# Нативная сборка `@parcel/watcher` — ускорение слежения за файлами в dev-CLI
+# Nuxt. Без неё watcher откатывается на общий механизм, а сборка и тесты его не
+# используют вовсе: выполнять чужой postinstall ради этого не за что.
+ignoredBuiltDependencies:
+  - '@parcel/watcher'

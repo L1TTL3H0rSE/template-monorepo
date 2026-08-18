@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"roleplay/gotemplate/config"
-	httpinfra "roleplay/gotemplate/internal/infra/http"
-	examplesvc "roleplay/gotemplate/internal/infra/services/example"
-	"roleplay/gotemplate/internal/query"
-	"roleplay/kit/adapters/postgres"
-	"roleplay/kit/bootstrap"
-	"roleplay/kit/runtime"
+	"starter/gotemplate/config"
+	httpinfra "starter/gotemplate/internal/infra/http"
+	examplesvc "starter/gotemplate/internal/infra/services/example"
+	"starter/gotemplate/internal/query"
+	"starter/kit/adapters/postgres"
+	"starter/kit/bootstrap"
+	"starter/kit/runtime"
 )
 
 // Run — composition root сервиса и единственное место, где создаются

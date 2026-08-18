@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 
-	"roleplay/kit/errorsx"
+	"starter/kit/errorsx"
 )
 
 const userContextKey = "user_context"

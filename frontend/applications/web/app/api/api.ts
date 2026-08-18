@@ -1,4 +1,4 @@
-import { ApiClient } from "@roleplay/api/core";
+import { ApiClient } from "@starter/api/core";
 import type { WebApi } from "~/contracts/character";
 import { HttpCharacterAdapter } from "~/adapters/http/character-adapter";
 import { MockCharacterAdapter } from "~/adapters/mock/character-adapter";

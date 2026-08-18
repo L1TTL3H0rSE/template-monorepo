@@ -1,4 +1,4 @@
-import { setup, type Preview } from "@storybook/vue3";
+import { setup, type Preview } from "@storybook/vue3-vite";
 import { createPinia } from "pinia";
 import * as components from "../src/components";
 import { breakpoints } from "../src/utils/_breakpoints";
@@ -37,13 +37,13 @@ const preview: Preview = {
     controls: {
       matchers: { color: /(background|color)$/i, date: /Date$/i },
     },
-    viewport: { viewports: customViewports },
+    viewport: { options: customViewports },
     backgrounds: {
       default: "app",
-      values: [
-        { name: "app", value: "#f7f6fb" },
-        { name: "surface", value: "#ffffff" },
-      ],
+      options: {
+        app: { name: "app", value: "#f7f6fb" },
+        surface: { name: "surface", value: "#ffffff" },
+      },
     },
   },
 };

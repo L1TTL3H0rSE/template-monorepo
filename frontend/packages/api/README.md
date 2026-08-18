@@ -1,4 +1,4 @@
-# @roleplay/api
+# @starter/api
 
 Транспорт и схемы контракта бэкенда. Ни одного Vue-компонента и ни одного
 доменного типа приложения.
@@ -7,8 +7,8 @@
 
 | Импорт | Содержит |
 |---|---|
-| `@roleplay/api/core` | `ApiClient`, `ApiError`, `NetworkError` |
-| `@roleplay/api/gateway` | zod-схемы транспортных DTO и `parseResponse` |
+| `@starter/api/core` | `ApiClient`, `ApiError`, `NetworkError` |
+| `@starter/api/gateway` | zod-схемы транспортных DTO и `parseResponse` |
 
 ## Разделение обязанностей
 

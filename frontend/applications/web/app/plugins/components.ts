@@ -1,5 +1,5 @@
 import { NuxtLink } from "#components";
-import { componentsPlugin } from "@roleplay/components";
+import { componentsPlugin } from "@starter/components";
 
 /**
  * Установка дизайн-системы — задача плагина, а не компонента.
@@ -9,7 +9,7 @@ import { componentsPlugin } from "@roleplay/components";
  * компонента, то есть уже после того, как Vue начал разрешать дерево.
  *
  * Здесь же приложение передаёт пакету то, чего пакет не должен знать сам:
- * компонент ссылки конкретного роутера. Благодаря этому `@roleplay/components`
+ * компонент ссылки конкретного роутера. Благодаря этому `@starter/components`
  * не зависит от Nuxt и остаётся собираемым для Storybook.
  */
 export default defineNuxtPlugin((nuxtApp) => {

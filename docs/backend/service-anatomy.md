@@ -64,9 +64,9 @@ go test ./...
 Соседние модули подключаются через `replace`:
 
 ```go
-require roleplay/kit v0.0.0
+require starter/kit v0.0.0
 
-replace roleplay/kit => ../kit
+replace starter/kit => ../kit
 ```
 
 **Почему так, а не единый модуль или `go.work`:** общий workspace делает сборку
@@ -76,7 +76,7 @@ replace roleplay/kit => ../kit
 ## Создание нового сервиса
 
 1. Скопировать `backend/gotemplate` в `backend/go<domain>`.
-2. Заменить `module roleplay/gotemplate` в `go.mod` и все импорты.
+2. Заменить `module starter/gotemplate` в `go.mod` и все импорты.
 3. Переименовать домен `example` в свой.
 4. Заменить `migrations/000001_initial_schema.*` на свою схему.
 5. Обновить `pkg/permissions/permissions.go`: `ServiceCode`, actions, ресурсы.

@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"roleplay/kit/ginx"
+	"starter/kit/ginx"
 )
 
 // RequestID гарантирует наличие X-Request-ID у каждого запроса и возвращает его

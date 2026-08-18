@@ -49,7 +49,7 @@
 | Умолчание | Где |
 |---|---|
 | Пагинация, фильтр и сортировка на API, а не в браузере | [`api-and-adapters.md`](api-and-adapters.md) |
-| Debounce интерактивного поиска | `@roleplay/shared/search` |
+| Debounce интерактивного поиска | `@starter/shared/search` |
 | Оптимистичный оверлей + ограниченный опрос вместо перезагрузки | [`eventual-consistency.md`](eventual-consistency.md) |
 | Latest-request-wins и отмена устаревшего чтения | [`state-and-stores.md`](state-and-stores.md) |
 | SSR по умолчанию | [`nuxt-application.md`](nuxt-application.md) |
@@ -94,7 +94,7 @@
 - **Отмена не является ошибкой сети** и не показывается пользователю как
   «сервис недоступен».
 - Опрос всегда ограничен бюджетом, использует backoff и может быть отменён —
-  эталон `probeUntil` в `@roleplay/shared/data`.
+  эталон `probeUntil` в `@starter/shared/data`.
 
 Причины и реализация — [`state-and-stores.md`](state-and-stores.md).
 
@@ -208,7 +208,7 @@ Worker для маленькой задачи добавлять не нужно
 
 ## 14. Зависимости и рост пакетов
 
-Для `@roleplay/components` и остальных пакетов workspace:
+Для `@starter/components` и остальных пакетов workspace:
 
 - рост пакета отражается на сборке каждого потребителя;
 - внешние зависимости остаются внешними — так и задумано

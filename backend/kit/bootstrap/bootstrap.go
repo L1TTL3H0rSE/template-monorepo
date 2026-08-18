@@ -11,10 +11,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"roleplay/kit/cache"
-	"roleplay/kit/logger"
-	"roleplay/kit/ratelimiter"
-	"roleplay/kit/runtime"
+	"starter/kit/cache"
+	"starter/kit/logger"
+	"starter/kit/ratelimiter"
+	"starter/kit/runtime"
 )
 
 // Common — блоки конфигурации, общие для всех сервисов. Встраивается в Config

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { Button, Card } from "@roleplay/components";
+import { Button, Card } from "@starter/components";
 
-useHead({ title: "Roleplay — главная" });
+useHead({ title: "Starter — главная" });
 </script>
 
 <template>

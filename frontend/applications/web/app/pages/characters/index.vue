@@ -6,7 +6,7 @@ import {
   Card,
   Modal,
   TextField,
-} from "@roleplay/components";
+} from "@starter/components";
 import type { CharacterStatus } from "~/contracts/character";
 import { useCharactersStore } from "~/stores/characters";
 import { useCharacterForm } from "~/composables/useCharacterForm";

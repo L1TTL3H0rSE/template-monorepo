@@ -10,7 +10,7 @@
 ## Требования
 
 - Go 1.25+
-- Node.js 20+, pnpm 10+
+- Node.js 22.13+, pnpm 11+
 - Docker (для PostgreSQL)
 
 ## Быстрый старт
@@ -28,7 +28,7 @@ go run ./cmd/app                            # http://localhost:8080
 cd frontend
 pnpm install
 pnpm build:local                            # пакеты экспортируют dist — собрать обязательно
-pnpm --filter @roleplay/web dev             # http://localhost:3000
+pnpm --filter @starter/web dev             # http://localhost:3000
 ```
 
 Приложение по умолчанию работает на фикстурах (`NUXT_PUBLIC_API_PROVIDER=mock`)

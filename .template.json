@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "initialized": false,
   "sourceIdentity": {
-    "displayName": "Roleplay",
-    "slug": "roleplay",
+    "displayName": "Starter",
+    "slug": "starter",
     "repositoryName": "template-monorepo",
-    "npmScope": "@roleplay",
-    "goModulePrefix": "roleplay"
+    "npmScope": "@starter",
+    "goModulePrefix": "starter"
   },
   "projectIdentity": null,
   "demo": {

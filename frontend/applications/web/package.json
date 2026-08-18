@@ -1,5 +1,5 @@
 {
-  "name": "@roleplay/web",
+  "name": "@starter/web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@pinia/nuxt": "catalog:",
-    "@roleplay/api": "workspace:*",
-    "@roleplay/components": "workspace:*",
-    "@roleplay/shared": "workspace:*",
+    "@starter/api": "workspace:*",
+    "@starter/components": "workspace:*",
+    "@starter/shared": "workspace:*",
     "@vueuse/core": "catalog:",
     "@vueuse/nuxt": "catalog:",
     "pinia": "catalog:",
@@ -27,7 +27,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@roleplay/eslint-config": "workspace:*",
+    "@starter/eslint-config": "workspace:*",
     "@vitest/coverage-v8": "catalog:",
     "@vue/test-utils": "catalog:",
     "eslint": "catalog:",

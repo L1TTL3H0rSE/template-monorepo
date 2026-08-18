@@ -8,9 +8,9 @@
 // Разбор паттерна — docs/backend/nats-contracts.md.
 syntax = "proto3";
 
-package roleplay.gotemplate.rpc.v1;
+package starter.gotemplate.rpc.v1;
 
-option go_package = "roleplay/gotemplate/pkg/rpc;rpc";
+option go_package = "starter/gotemplate/pkg/rpc;rpc";
 
 message ExampleReadOneRequest {
   string id = 1;
