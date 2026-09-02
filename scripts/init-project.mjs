@@ -18,7 +18,14 @@
 // (gotemplate, example, character) остаются рабочим кодом: они удаляются
 // осознанно, когда появится настоящий вертикальный срез — см. docs/TEMPLATE.md.
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -30,6 +37,11 @@ import {
 } from "./template-identity.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** Каталог предложений шаблона и его строка в индексе документации. */
+const PROPOSALS_DIR = "docs/proposals";
+const PROPOSALS_INDEX_ROW =
+  "| [`proposals/`](proposals/) | Идеи, зафиксированные, но ещё не принятые |";
 
 main();
 
@@ -44,9 +56,13 @@ function main() {
   const replacements = buildReplacements(metadata.sourceIdentity, target);
 
   const files = collectTextFiles(ROOT).filter(
-    // Метаданные шаблона обновляются программно: sourceIdentity в них обязан
-    // пережить замену, иначе проверка остатков потеряет эталон для сравнения.
-    (file) => file !== TEMPLATE_METADATA_FILE,
+    (file) =>
+      // Метаданные шаблона обновляются программно: sourceIdentity в них обязан
+      // пережить замену, иначе проверка остатков потеряет эталон для сравнения.
+      file !== TEMPLATE_METADATA_FILE &&
+      // Предложения удаляются целиком ниже. Заменять в них идентичность незачем,
+      // а в отчёте они выглядели бы как изменённые файлы, которых уже нет.
+      !file.startsWith(PROPOSALS_DIR + "/"),
   );
 
   const changed = [];
@@ -70,10 +86,11 @@ function main() {
   report(changed, totals, options);
 
   if (options.dryRun) {
-    console.log("\n--dry-run: дерево не изменено.");
+    console.log("\n--dry-run: дерево не изменено. При обычном запуске docs/proposals/ удаляется.");
     return;
   }
 
+  removeProposals();
   splitProjectMemory();
   writeAdoptionTable();
   updateMetadata(metadata, target);
@@ -270,6 +287,45 @@ function splitProjectMemory() {
   );
 
   console.log("память: PROJECT_MEMORY.md -> TEMPLATE_MEMORY.md, создана новая");
+}
+
+/**
+ * Удаляет предложения шаблона.
+ *
+ * `docs/proposals/` — план развития САМОГО шаблона: идеи, которые зафиксированы,
+ * но не приняты. Проекту они достаются как чужой список задач: разбирать его
+ * никто не станет, а устаревать он начнёт с первого изменения стека.
+ *
+ * Принятые решения наследуются другим путём — через ADR и `ADOPTION.md`, где у
+ * каждого есть статус и обязательный пересмотр. У предложения статуса нет,
+ * поэтому и наследовать нечего.
+ */
+function removeProposals() {
+  const directory = join(ROOT, PROPOSALS_DIR);
+  if (!existsSync(directory)) return;
+
+  rmSync(directory, { recursive: true });
+
+  // Строка индекса убирается вместе с каталогом: битая ссылка в docs/README.md
+  // хуже отсутствующей строки — её открывают и считают, что документ потеряли.
+  const index = join(ROOT, "docs/README.md");
+  const content = readFileSync(index, "utf8");
+
+  if (!content.includes(PROPOSALS_INDEX_ROW)) {
+    fail(
+      `docs/README.md: строка индекса для ${PROPOSALS_DIR}/ не найдена — ` +
+        "обновите PROPOSALS_INDEX_ROW в scripts/init-project.mjs, иначе " +
+        "инициализация оставит ссылку на удалённый каталог.",
+    );
+  }
+
+  writeFileSync(
+    index,
+    content.replace(PROPOSALS_INDEX_ROW + "\n", ""),
+    "utf8",
+  );
+
+  console.log(`предложения: ${PROPOSALS_DIR}/ удалён, строка индекса убрана`);
 }
 
 /**

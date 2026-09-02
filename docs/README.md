@@ -16,6 +16,7 @@
 | [`conventions/cross-platform.md`](conventions/cross-platform.md) | Генераторы, регистр имён, воспроизводимость |
 | [`conventions/documentation.md`](conventions/documentation.md) | Когда решение нужно зафиксировать |
 | [`decisions/`](decisions/) | Причины принятых сквозных решений |
+| [`proposals/`](proposals/) | Идеи, зафиксированные, но ещё не принятые |
 | [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md) | Подтверждённые ловушки, которые трудно вывести из кода |
 
 ## Backend

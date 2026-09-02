@@ -291,8 +291,8 @@
   `ERR_PNPM_IGNORED_BUILDS` и ненулевой код возврата — то есть красный
   `pnpm install --frozen-lockfile` в CI. Молчание больше не означает «не
   собирать»: решение должно быть записано явно для каждого такого пакета — в
-  `onlyBuiltDependencies` либо в `ignoredBuiltDependencies`. Второй список
-  раньше был не нужен и потому отсутствовал. Новая зависимость с
+  `allowBuilds` (карта `имя: true|false`, заменившая пару
+  `onlyBuiltDependencies`/`ignoredBuiltDependencies`). Новая зависимость с
   `postinstall` ломает установку до тех пор, пока её судьба не зафиксирована.
 - **Источники:** `frontend/pnpm-workspace.yaml`.
 - **Проверено:** 2026-08-18.
