@@ -28,6 +28,7 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildAdoptionDocument, parseDecision } from "./adoption.mjs";
 import {
   applyReplacements,
   buildReplacements,
@@ -341,107 +342,41 @@ function removeProposals() {
  * следующим исполнителем как «проверено». Вместо этого каждая строка несёт
  * условие пересмотра — событие из самого ADR, при наступлении которого строку
  * обязаны разрешить.
+ *
+ * Разбор и сборка живут в scripts/adoption.mjs: у них есть собственный
+ * инвариант, и его красное состояние доказывается тестом, а не запуском
+ * инициализации на живом дереве.
  */
 function writeAdoptionTable() {
   const decisionsDir = join(ROOT, "docs/decisions");
-  const files = readdirSync(decisionsDir)
+  const decisions = readdirSync(decisionsDir)
     .filter((name) => /^\d{4}-.*\.md$/.test(name))
-    .sort((a, b) => a.localeCompare(b, "en"));
-
-  const rows = files.map((file) => {
-    const content = readFileSync(join(decisionsDir, file), "utf8");
-    const titleMatch = content.match(/^#\s*ADR-(\d{4}):\s*(.+)$/m);
-    const statusMatch = content.match(/\*\*Статус:\*\*\s*(\S+)/);
-    const triggerMatch = content.match(
-      /\*\*Пересмотр в потомке:\*\*[ \t]*((?:[^\r\n]|\r?\n {2,})+)/,
+    .sort((a, b) => a.localeCompare(b, "en"))
+    .map((file) =>
+      parseDecision(file, readFileSync(join(decisionsDir, file), "utf8")),
     );
 
-    return {
-      id: titleMatch?.[1] ?? file.slice(0, 4),
-      title: titleMatch?.[2]?.trim() ?? file,
-      status: statusMatch?.[1] ?? "unknown",
-      trigger: triggerMatch?.[1]?.replace(/\s+/g, " ").trim() ?? "",
-      file,
-    };
-  });
+  const document = buildAdoptionDocument(decisions);
 
-  // Пересмотра требуют только ДЕЙСТВУЮЩИЕ решения. Отменённое или замещённое
-  // решение шаблона не может стать решением проекта: «принять» его нечего.
-  // Такие ADR остаются в таблице справочно — они объясняют, почему действующее
-  // решение выглядит именно так.
-  const active = rows.filter((row) => row.status === "accepted");
-  const historical = rows.filter((row) => row.status !== "accepted");
-
-  // Строка без условия пересмотра неотличима от забытой: через полгода никто
-  // не скажет, ждём мы события или просто не дошли руки. Поэтому отсутствие
-  // поля валит инициализацию здесь, а не становится пустой ячейкой у потомка.
-  const withoutTrigger = active.filter((row) => !row.trigger);
-  if (withoutTrigger.length > 0) {
+  if (document.missingTriggers.length > 0) {
     fail(
-      "у действующих ADR нет поля «Пересмотр в потомке»: " +
-        withoutTrigger.map((row) => row.file).join(", ") +
+      "у действующих ADR шаблона нет поля «Пересмотр в потомке»: " +
+        document.missingTriggers.join(", ") +
         "\nДобавьте событие, при котором проект обязан пересмотреть " +
-        "решение — см. docs/decisions/_template.md.",
+        "решение — см. docs/decisions/README.md.",
     );
   }
 
-  const lines = [
-    "# Принятие ADR шаблона",
-    "",
-    "Принятый ADR шаблона — решение **шаблона**, а не автоматически решение",
-    "этого проекта. Пока строка имеет состояние `pending`, соответствующее",
-    "решение НЕ считается принятым.",
-    "",
-    "Унаследованное решение пересматривается тогда, когда соответствующая",
-    "архитектура **впервые задействована** в этом проекте. Состояние `pending`",
-    "блокирует только ту работу, которая на это решение опирается, а не проект",
-    "целиком: контракт между сервисами нечем проверить, пока сервис один, а",
-    "доверие гейтвею — пока гейтвея нет. Поэтому у каждой строки есть условие",
-    "пересмотра — событие, при наступлении которого её обязаны разрешить.",
-    "",
-    "Допустимые состояния:",
-    "",
-    "- `adopted` — решение проверено в контексте проекта и принято; в той же",
-    "  ячейке записывается, НА ЧЁМ проверено;",
-    "- `superseded by ADR-NNNN` — проект принял другое решение и оформил его",
-    "  собственным ADR;",
-    "- `pending` — событие не наступило либо решение ещё не рассмотрено.",
-    "",
-    "Состояния `rejected` нет намеренно: унаследованный файл продолжает",
-    "утверждать `accepted` и остаётся в дереве. Отказ оформляется новым ADR,",
-    "который его замещает.",
-    "",
-    "## Требуют пересмотра",
-    "",
-    "| ADR | Решение шаблона | Состояние в проекте | Условие пересмотра / на чём проверено |",
-    "|---|---|---|---|",
-    ...active.map(
-      (row) =>
-        `| [${row.id}](${row.file}) | ${row.title} | pending | ${row.trigger} |`,
-    ),
-    "",
-  ];
-
-  if (historical.length > 0) {
-    lines.push(
-      "## Справочно: недействующие решения шаблона",
-      "",
-      "Пересмотра не требуют — принимать нечего. Оставлены, потому что",
-      "объясняют, почему действующие решения выглядят именно так.",
-      "",
-      "| ADR | Решение шаблона | Статус в шаблоне |",
-      "|---|---|---|",
-      ...historical.map(
-        (row) => `| [${row.id}](${row.file}) | ${row.title} | ${row.status} |`,
-      ),
-      "",
-    );
-  }
-
-  writeFileSync(join(decisionsDir, "ADOPTION.md"), lines.join("\n"), "utf8");
+  writeFileSync(
+    join(decisionsDir, "ADOPTION.md"),
+    document.markdown,
+    "utf8",
+  );
   console.log(
-    `ADR: создан ADOPTION.md, ${active.length} решений к пересмотру` +
-      (historical.length > 0 ? `, ${historical.length} справочно` : ""),
+    `ADR: создан ADOPTION.md, ${document.activeCount} решений к пересмотру` +
+      (document.historicalCount > 0
+        ? `, ${document.historicalCount} справочно`
+        : ""),
   );
 }
 
@@ -509,8 +444,9 @@ function printNextSteps(target) {
       "     cd frontend && pnpm install --frozen-lockfile && pnpm build:local \\",
       "       && pnpm lint && pnpm typecheck && pnpm test",
       `     pnpm --filter ${target.npmScope}/web build`,
-      "     (cd backend/kit && go build ./... && go vet ./...)",
+      "     (cd backend/kit && go build ./... && go vet ./... && go test ./...)",
       "     (cd backend/gotemplate && go build ./... && go vet ./... && go test ./...)",
+      "   Полный и обязательный список — docs/conventions/checks.md.",
       "3. Решить судьбу демонстрационных доменов (gotemplate / example /",
       "   character) — см. docs/TEMPLATE.md.",
       "",

@@ -83,7 +83,7 @@ docker/             образы
 
 ```bash
 # backend
-(cd backend/kit && go build ./... && go vet ./...)
+(cd backend/kit && go build ./... && go vet ./... && go test ./...)
 (cd backend/gotemplate && go build ./... && go vet ./... && go test ./...)
 
 # frontend

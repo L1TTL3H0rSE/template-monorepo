@@ -24,11 +24,11 @@ import (
 // успешно, накатила бы схему сервиса и записала бы данные — просто не туда.
 // Ошибки при этом не возникает нигде, и расхождение всплывает только когда
 // рядом работает второй процесс с правильным окружением и видит пустую базу.
-// Забытое имя базы обязано падать на старте.
+// Забытое имя базы обязано падать на старте — см. Validate.
 type Config struct {
 	Host     string `env:"HOST" env-default:"localhost"`
 	Port     int    `env:"PORT" env-default:"5432"`
-	Name     string `env:"NAME" env-required:"true"`
+	Name     string `env:"NAME"`
 	User     string `env:"USER" env-default:"postgres"`
 	Password string `env:"PASSWORD" env-default:"postgres"`
 	SSLMode  string `env:"SSL_MODE" env-default:"disable"`
@@ -36,6 +36,25 @@ type Config struct {
 	MaxConns        int32         `env:"MAX_CONNS" env-default:"10"`
 	MinConns        int32         `env:"MIN_CONNS" env-default:"2"`
 	MaxConnLifetime time.Duration `env:"MAX_CONN_LIFETIME" env-default:"1h"`
+}
+
+// Validate проверяет то, что теги описать не умеют.
+//
+// `env-required` различает «переменной нет» и «переменная пустая», и второе он
+// пропускает: DB_NAME="" прошло бы загрузку и вернуло бы адрес без имени базы,
+// а дальше имя выбрал бы драйвер — тем же служебным `postgres`. Инвариант
+// сформулирован по значению, а не по факту наличия переменной, поэтому живёт
+// здесь, а не в теге.
+//
+// Умолчания хоста, порта и пользователя намеренно оставлены: недоступный хост
+// виден сразу, а не тихо принимает записи не в ту базу.
+func (c *Config) Validate() error {
+	if strings.TrimSpace(c.Name) == "" {
+		return errors.New("DB_NAME пуст: имя базы сервиса задаётся явно, " +
+			"иначе команда молча уходит в служебную базу postgres")
+	}
+
+	return nil
 }
 
 // DSN собирает строку подключения. Единственное место, где она формируется.
@@ -66,6 +85,11 @@ func NewAdapter(cfg *Config, log *zap.Logger) *Adapter {
 }
 
 func (a *Adapter) Connect(ctx context.Context) error {
+	// До любых сетевых действий: подключение с пустым именем базы удалось бы.
+	if err := a.cfg.Validate(); err != nil {
+		return err
+	}
+
 	poolConfig, err := pgxpool.ParseConfig(a.cfg.DSN())
 	if err != nil {
 		return fmt.Errorf("parse dsn: %w", err)

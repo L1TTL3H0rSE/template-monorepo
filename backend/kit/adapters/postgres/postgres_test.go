@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"os"
 	"strings"
 	"testing"
@@ -13,36 +14,78 @@ type envConfig struct {
 	Database Config `env-prefix:"DB_"`
 }
 
+// load повторяет путь загрузки сервиса: теги заполняются из окружения, затем
+// значения проверяются. Именно эта пара и есть контракт, а не одни теги.
 func load(t *testing.T) (*envConfig, error) {
 	t.Helper()
 
 	cfg := &envConfig{}
+	if err := cleanenv.ReadEnv(cfg); err != nil {
+		return cfg, err
+	}
 
-	return cfg, cleanenv.ReadEnv(cfg)
+	return cfg, cfg.Database.Validate()
 }
 
-// Имя базы обязано быть задано: `postgres` — действующая служебная база
-// кластера, и умолчание увело бы миграции и записи туда молча и успешно.
+// Имя базы обязано быть задано ЗНАЧИМЫМ: `postgres` — действующая служебная
+// база кластера, и всё, что не даёт явного имени, увело бы миграции и записи
+// туда молча и успешно.
 //
-// Проверка держится на обеих сторонах: без DB_NAME загрузка падает, с ним —
-// проходит. Без первой половины тест был бы зелёным и при возвращённом
-// умолчании, то есть не проверял бы ничего.
-func TestNameIsRequired(t *testing.T) {
+// Пустая строка проверяется отдельно от отсутствия переменной намеренно:
+// `env-required` эти два случая различает и второй пропускает, поэтому тегом
+// инвариант не выражается.
+func TestNameMustBeMeaningful(t *testing.T) {
+	// Регистрирует восстановление окружения; значение снимается ниже.
 	t.Setenv("DB_NAME", "placeholder")
-	os.Unsetenv("DB_NAME")
 
-	if _, err := load(t); err == nil {
-		t.Fatal("конфигурация без DB_NAME загрузилась: сервис ушёл бы в служебную базу postgres")
+	for _, tc := range []struct {
+		name  string
+		value string
+		unset bool
+	}{
+		{name: "переменной нет", unset: true},
+		{name: "пустая строка", value: ""},
+		{name: "только пробелы", value: "   "},
+		{name: "табуляция и перевод строки", value: "\t\n"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.unset {
+				os.Unsetenv("DB_NAME")
+			} else {
+				t.Setenv("DB_NAME", tc.value)
+			}
+
+			if _, err := load(t); err == nil {
+				t.Fatal("конфигурация загрузилась: сервис ушёл бы в служебную базу postgres")
+			}
+		})
 	}
 
-	t.Setenv("DB_NAME", "service")
+	t.Run("настоящее имя проходит", func(t *testing.T) {
+		t.Setenv("DB_NAME", "service")
 
-	cfg, err := load(t)
-	if err != nil {
-		t.Fatalf("конфигурация с DB_NAME не загрузилась: %v", err)
+		cfg, err := load(t)
+		if err != nil {
+			t.Fatalf("конфигурация с DB_NAME не загрузилась: %v", err)
+		}
+		if cfg.Database.Name != "service" {
+			t.Fatalf("Name = %q, ожидалось service", cfg.Database.Name)
+		}
+	})
+}
+
+// Проверка обязана стоять ДО сетевых действий: подключение с пустым именем
+// базы состоялось бы, и ошибки не было бы нигде. Живой БД тесту не нужно —
+// красный ответ приходит раньше, чем адаптер пытается открыть пул.
+func TestConnectRejectsEmptyName(t *testing.T) {
+	adapter := NewAdapter(&Config{Host: "localhost", Port: 5432, Name: " "}, nil)
+
+	err := adapter.Connect(context.Background())
+	if err == nil {
+		t.Fatal("Connect принял конфигурацию без имени базы")
 	}
-	if cfg.Database.Name != "service" {
-		t.Fatalf("Name = %q, ожидалось service", cfg.Database.Name)
+	if !strings.Contains(err.Error(), "DB_NAME") {
+		t.Fatalf("ошибка не называет причину: %v", err)
 	}
 }
 

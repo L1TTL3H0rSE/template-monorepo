@@ -8,12 +8,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 
-	"starter/gotemplate/config"
+	"starter/kit/adapters/postgres"
+	"starter/kit/configloader"
 )
 
 type (
@@ -24,20 +26,33 @@ type (
 	Format   mg.Namespace
 )
 
-// dbURL берёт адрес миграций из ТОЙ ЖЕ конфигурации, что и приложение.
+// migrationConfig — конфигурация миграций: только блок БД.
+//
+// Это НЕ вторая конфигурация базы: тип, префикс переменных и сборка адреса —
+// те же самые, из kit. Отличается только ширина: миграциям не нужны порт
+// HTTP-сервера, лимитер, кеш и логирование, и падать из-за них они не должны.
+type migrationConfig struct {
+	Database postgres.Config `env-prefix:"DB_"`
+}
+
+// dbURL берёт адрес миграций из тех же переменных DB_*, что и приложение.
 //
 // Второй строки подключения в сервисе нет намеренно: захардкоженный DSN
 // расходится с окружением молча, а `postgres` — действующая служебная база
-// кластера, в которую миграции применились бы успешно и не туда. Отсутствие
-// DB_NAME обязано падать здесь, а не проявляться пустой базой у соседа.
+// кластера, в которую миграции применились бы успешно и не туда.
 //
 // Схема — из kit: golang-migrate выбирает драйвер БД по схеме URL, и postgres
 // увёл бы миграции на lib/pq, второй драйвер PostgreSQL рядом с pgx рантайма
 // (MEM-006). CLI migrate ставится с тем же тегом — см. Dev.Setup.
 func dbURL() (string, error) {
-	cfg, err := config.Load()
-	if err != nil {
-		return "", fmt.Errorf("конфигурация: %w (скопируйте .env.example в .env)", err)
+	cfg := migrationConfig{}
+	if err := configloader.LoadEnv(context.Background(), "gotemplate", &cfg); err != nil {
+		return "", err
+	}
+
+	// Пустое имя базы прошло бы загрузку и увело бы миграции в служебную базу.
+	if err := cfg.Database.Validate(); err != nil {
+		return "", err
 	}
 
 	return cfg.Database.MigrationDSN(), nil
