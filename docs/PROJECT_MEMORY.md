@@ -63,8 +63,14 @@
 - **Факт:** схема `postgres://` уводит миграции на драйвер `lib/pq`, то есть на
   второй драйвер PostgreSQL в сборке. Для pgx нужна схема `pgx5://` — её строит
   `Config.MigrationDSN()`.
-- **Источники:** `backend/kit/adapters/postgres/postgres.go`.
-- **Проверено:** 2026-08-17.
+- **Вторая половина того же факта:** CLI `golang-migrate` собирает драйверы БД
+  по **build-тегам**. Бинарь, поставленный без `-tags pgx5`, отвечает
+  «unknown driver ... (forgotten import?)» на любой схеме URL, включая
+  правильную. Схема и тег обязаны совпадать, поэтому `Dev.Setup` ставит CLI с
+  тегом, а не «просто ставит migrate».
+- **Источники:** `backend/kit/adapters/postgres/postgres.go`,
+  `backend/gotemplate/magefile.go`.
+- **Проверено:** 2026-08-17, тег подтверждён в потомке 2026-09-02.
 
 ### MEM-007 — Pinia разворачивает ref-ы во вложенных объектах
 

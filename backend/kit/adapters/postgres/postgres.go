@@ -18,10 +18,17 @@ import (
 )
 
 // Config — блок конфигурации БД (префикс DB_).
+//
+// У Name умолчания нет намеренно, в отличие от адреса и порта. `postgres` —
+// действующая служебная база кластера: команда без DB_NAME соединилась бы
+// успешно, накатила бы схему сервиса и записала бы данные — просто не туда.
+// Ошибки при этом не возникает нигде, и расхождение всплывает только когда
+// рядом работает второй процесс с правильным окружением и видит пустую базу.
+// Забытое имя базы обязано падать на старте.
 type Config struct {
 	Host     string `env:"HOST" env-default:"localhost"`
 	Port     int    `env:"PORT" env-default:"5432"`
-	Name     string `env:"NAME" env-default:"postgres"`
+	Name     string `env:"NAME" env-required:"true"`
 	User     string `env:"USER" env-default:"postgres"`
 	Password string `env:"PASSWORD" env-default:"postgres"`
 	SSLMode  string `env:"SSL_MODE" env-default:"disable"`

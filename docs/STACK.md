@@ -11,7 +11,10 @@
 - Go `1.25`.
 - HTTP — Gin.
 - PostgreSQL через pgx v5 и sqlc.
-- Миграции — `golang-migrate`, каталог `migrations/` внутри сервиса.
+- Миграции — `golang-migrate`, каталог `migrations/` внутри сервиса. CLI
+  ставится с тегом `pgx5`: драйверы БД собираются по build-тегам, и бинарь
+  без тега отвечает «unknown driver» на любой схеме URL. Схема адреса —
+  `pgx5://`, тот же драйвер, что и в рантайме.
 - Логирование — zap (JSON).
 - Общая инфраструктура — локальный модуль `backend/kit`, подключается через
   `replace ../kit`.
@@ -37,7 +40,7 @@ go test ./...
 | Инструмент | Зачем | Установка |
 |---|---|---|
 | `sqlc` | Go-код из SQL | `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest` |
-| `migrate` | Миграции | `go install github.com/golang-migrate/migrate/v4/cmd/migrate@latest` |
+| `migrate` | Миграции | `go install -tags pgx5 github.com/golang-migrate/migrate/v4/cmd/migrate@latest` |
 | `swag` | Swagger из аннотаций | `go install github.com/swaggo/swag/cmd/swag@latest` |
 | `mage` | Канонические команды | `go run github.com/magefile/mage <target>` |
 

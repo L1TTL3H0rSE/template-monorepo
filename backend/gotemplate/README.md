@@ -30,11 +30,16 @@ magefile.go                    канонические команды
 ## Быстрый старт
 
 ```bash
+cp .env.example .env
 go run github.com/magefile/mage dev:setup
 docker compose --parallel 4 up -d postgres
 go run github.com/magefile/mage database:up
 go run ./cmd/app
 ```
+
+`.env` — первый шаг, а не необязательный: `DB_NAME` умолчания не имеет, и без
+него и миграции, и приложение падают на старте. Умолчание здесь было бы опаснее
+падения — команда ушла бы в служебную базу `postgres` успешно и молча.
 
 - HTTP API: `http://localhost:8080`
 - Health: `http://localhost:8080/health`

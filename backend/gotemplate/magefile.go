@@ -9,10 +9,11 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
+
+	"starter/gotemplate/config"
 )
 
 type (
@@ -23,14 +24,23 @@ type (
 	Format   mg.Namespace
 )
 
-// dbURL берётся из окружения, чтобы локальные миграции шли в ту же БД, что и
-// приложение. Хардкод строки подключения — источник расхождений.
-func dbURL() string {
-	if url := os.Getenv("MIGRATE_DATABASE_URL"); url != "" {
-		return url
+// dbURL берёт адрес миграций из ТОЙ ЖЕ конфигурации, что и приложение.
+//
+// Второй строки подключения в сервисе нет намеренно: захардкоженный DSN
+// расходится с окружением молча, а `postgres` — действующая служебная база
+// кластера, в которую миграции применились бы успешно и не туда. Отсутствие
+// DB_NAME обязано падать здесь, а не проявляться пустой базой у соседа.
+//
+// Схема — из kit: golang-migrate выбирает драйвер БД по схеме URL, и postgres
+// увёл бы миграции на lib/pq, второй драйвер PostgreSQL рядом с pgx рантайма
+// (MEM-006). CLI migrate ставится с тем же тегом — см. Dev.Setup.
+func dbURL() (string, error) {
+	cfg, err := config.Load()
+	if err != nil {
+		return "", fmt.Errorf("конфигурация: %w (скопируйте .env.example в .env)", err)
 	}
 
-	return "postgres://postgres:postgres@localhost:5432/gotemplate?sslmode=disable"
+	return cfg.Database.MigrationDSN(), nil
 }
 
 // App собирает бинарь сервиса.
@@ -52,12 +62,22 @@ func Lint() error {
 
 // Up применяет миграции.
 func (Database) Up() error {
-	return sh.Run("migrate", "-path", "migrations", "-database", dbURL(), "up")
+	url, err := dbURL()
+	if err != nil {
+		return err
+	}
+
+	return sh.Run("migrate", "-path", "migrations", "-database", url, "up")
 }
 
 // Down откатывает миграции.
 func (Database) Down() error {
-	return sh.Run("migrate", "-path", "migrations", "-database", dbURL(), "down")
+	url, err := dbURL()
+	if err != nil {
+		return err
+	}
+
+	return sh.Run("migrate", "-path", "migrations", "-database", url, "down")
 }
 
 // Create создаёт пару файлов новой миграции.
@@ -94,17 +114,34 @@ func (Generate) All() error {
 }
 
 // Setup ставит инструменты разработки.
+//
+// У migrate указан build tag: CLI golang-migrate собирает драйверы БД по
+// тегам, и установка без них даёт бинарь, который на любой схеме URL
+// отвечает «unknown driver ... (forgotten import?)». Тег pgx5 — тот же
+// драйвер, что и в рантайме kit: иначе миграции и приложение работают
+// через разные драйверы PostgreSQL.
 func (Dev) Setup() error {
-	tools := []string{
-		"github.com/sqlc-dev/sqlc/cmd/sqlc@latest",
-		"github.com/golang-migrate/migrate/v4/cmd/migrate@latest",
-		"github.com/swaggo/swag/cmd/swag@latest",
+	type tool struct {
+		pkg  string
+		tags string
 	}
 
-	for _, tool := range tools {
-		fmt.Printf("installing %s...\n", tool)
-		if err := sh.Run("go", "install", tool); err != nil {
-			return fmt.Errorf("install %s: %w", tool, err)
+	tools := []tool{
+		{pkg: "github.com/sqlc-dev/sqlc/cmd/sqlc@latest"},
+		{pkg: "github.com/golang-migrate/migrate/v4/cmd/migrate@latest", tags: "pgx5"},
+		{pkg: "github.com/swaggo/swag/cmd/swag@latest"},
+	}
+
+	for _, t := range tools {
+		fmt.Printf("installing %s...\n", t.pkg)
+
+		args := []string{"install"}
+		if t.tags != "" {
+			args = append(args, "-tags", t.tags)
+		}
+
+		if err := sh.Run("go", append(args, t.pkg)...); err != nil {
+			return fmt.Errorf("install %s: %w", t.pkg, err)
 		}
 	}
 
