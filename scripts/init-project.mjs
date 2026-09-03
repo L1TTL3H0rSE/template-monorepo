@@ -41,6 +41,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Каталог предложений шаблона и его строка в индексе документации. */
 const PROPOSALS_DIR = "docs/proposals";
+const DECISIONS_DIR = resolve(ROOT, "docs/decisions");
+const PROJECT_MEMORY = resolve(ROOT, "docs/PROJECT_MEMORY.md");
 const PROPOSALS_INDEX_ROW =
   "| [`proposals/`](proposals/) | Идеи, зафиксированные, но ещё не принятые |";
 
@@ -54,6 +56,14 @@ function main() {
   assertCleanWorkingTree(options);
 
   const target = validateIdentity(options);
+
+  // Предусловие проверяется ДО первой записи и до выхода по --dry-run.
+  // Иначе шаблон с незаполненным ADR успевает частично себя переписать, прежде
+  // чем упасть, а сухой прогон отчитывается об успехе там, где настоящая
+  // инициализация остановится. Проверка после мутаций — это уже не предусловие.
+  assertTemplateLayout();
+  const adoption = prepareAdoption();
+
   const replacements = buildReplacements(metadata.sourceIdentity, target);
 
   const files = collectTextFiles(ROOT).filter(
@@ -93,7 +103,7 @@ function main() {
 
   removeProposals();
   splitProjectMemory();
-  writeAdoptionTable();
+  writeAdoptionTable(adoption);
   updateMetadata(metadata, target);
   runResidueCheck();
   printNextSteps(target);
@@ -228,6 +238,38 @@ function assertCleanWorkingTree(options) {
   }
 }
 
+/**
+ * Статические предусловия раскладки шаблона.
+ *
+ * Оба факта известны до первой записи, и оба ломают инициализацию на середине.
+ * Без строки индекса `removeProposals` останавливается уже ПОСЛЕ того, как
+ * каталог удалён; без `PROJECT_MEMORY.md` разделение памяти падает по ENOENT,
+ * когда идентичность во всём дереве уже заменена. В обоих случаях дерево
+ * остаётся ни шаблоном, ни проектом, а `--dry-run` до отказа не доходит.
+ *
+ * Точечные проверки на местах при этом остаются: они защищают саму запись, а
+ * эта — отвечает на вопрос «упадёт ли запуск» до того, как что-то изменено.
+ */
+function assertTemplateLayout() {
+  if (
+    existsSync(join(ROOT, PROPOSALS_DIR)) &&
+    !readFileSync(join(ROOT, "docs/README.md"), "utf8").includes(PROPOSALS_INDEX_ROW)
+  ) {
+    fail(
+      `docs/README.md: строка индекса для ${PROPOSALS_DIR}/ не найдена — ` +
+        "обновите PROPOSALS_INDEX_ROW в scripts/init-project.mjs, иначе " +
+        "инициализация оставит ссылку на удалённый каталог.",
+    );
+  }
+
+  if (!existsSync(PROJECT_MEMORY)) {
+    fail(
+      "docs/PROJECT_MEMORY.md отсутствует: разделять на память шаблона и " +
+        "память проекта нечего.",
+    );
+  }
+}
+
 // --- побочные эффекты инициализации ---
 
 /**
@@ -239,7 +281,7 @@ function assertCleanWorkingTree(options) {
  * ловушек тулчейна остаются полезными.
  */
 function splitProjectMemory() {
-  const inherited = join(ROOT, "docs/PROJECT_MEMORY.md");
+  const inherited = PROJECT_MEMORY;
   const template = join(ROOT, "docs/TEMPLATE_MEMORY.md");
 
   renameSync(inherited, template);
@@ -330,7 +372,7 @@ function removeProposals() {
 }
 
 /**
- * Генерирует таблицу принятия унаследованных ADR.
+ * Проверяет и собирает таблицу принятия унаследованных ADR.
  *
  * Принятый ADR шаблона — решение ШАБЛОНА, а не автоматически решение проекта.
  * Без явного пересмотра проект наследует чужие компромиссы, не зная их цены.
@@ -346,14 +388,17 @@ function removeProposals() {
  * Разбор и сборка живут в scripts/adoption.mjs: у них есть собственный
  * инвариант, и его красное состояние доказывается тестом, а не запуском
  * инициализации на живом дереве.
+ *
+ * Проверяется здесь, ДО первой записи: незаполненный ADR — свойство
+ * шаблона, известное до всякой мутации, и падение после половины замен
+ * оставило бы дерево ни шаблоном, ни проектом.
  */
-function writeAdoptionTable() {
-  const decisionsDir = join(ROOT, "docs/decisions");
-  const decisions = readdirSync(decisionsDir)
+function prepareAdoption() {
+  const decisions = readdirSync(DECISIONS_DIR)
     .filter((name) => /^\d{4}-.*\.md$/.test(name))
     .sort((a, b) => a.localeCompare(b, "en"))
     .map((file) =>
-      parseDecision(file, readFileSync(join(decisionsDir, file), "utf8")),
+      parseDecision(file, readFileSync(join(DECISIONS_DIR, file), "utf8")),
     );
 
   const document = buildAdoptionDocument(decisions);
@@ -363,15 +408,17 @@ function writeAdoptionTable() {
       "у действующих ADR шаблона нет поля «Пересмотр в потомке»: " +
         document.missingTriggers.join(", ") +
         "\nДобавьте событие, при котором проект обязан пересмотреть " +
-        "решение — см. docs/decisions/README.md.",
+        "решение — см. docs/decisions/README.md. " +
+        "Дерево не изменено: это предусловие, а не шаг инициализации.",
     );
   }
 
-  writeFileSync(
-    join(decisionsDir, "ADOPTION.md"),
-    document.markdown,
-    "utf8",
-  );
+  return document;
+}
+
+/** Записывает уже проверенную таблицу: решение о продолжении принято выше. */
+function writeAdoptionTable(document) {
+  writeFileSync(join(DECISIONS_DIR, "ADOPTION.md"), document.markdown, "utf8");
   console.log(
     `ADR: создан ADOPTION.md, ${document.activeCount} решений к пересмотру` +
       (document.historicalCount > 0

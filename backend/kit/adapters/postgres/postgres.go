@@ -123,7 +123,16 @@ func (a *Adapter) Pool() *pgxpool.Pool { return a.pool }
 // Схемой владеет сервис: чужие таблицы он не мигрирует и не читает. Уже
 // применённая миграция не переписывается — новое изменение схемы всегда
 // добавляет следующую пару файлов up/down.
+//
+// Конфигурацию проверяет сама, а не полагается на предшествующий Connect:
+// метод публичный, и команде, которой нужны только миграции, пул не нужен —
+// Connect она не вызовет. Инвариант, который держится лишь на порядке
+// вызовов, не записанном в сигнатуре, — это не инвариант.
 func (a *Adapter) RunMigrations(_ context.Context, dir string) error {
+	if err := a.cfg.Validate(); err != nil {
+		return err
+	}
+
 	migrator, err := migrate.New("file://"+dir, a.cfg.MigrationDSN())
 	if err != nil {
 		return fmt.Errorf("migrate init: %w", err)

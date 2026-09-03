@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -74,18 +75,42 @@ func TestNameMustBeMeaningful(t *testing.T) {
 	})
 }
 
-// Проверка обязана стоять ДО сетевых действий: подключение с пустым именем
-// базы состоялось бы, и ошибки не было бы нигде. Живой БД тесту не нужно —
-// красный ответ приходит раньше, чем адаптер пытается открыть пул.
-func TestConnectRejectsEmptyName(t *testing.T) {
-	adapter := NewAdapter(&Config{Host: "localhost", Port: 5432, Name: " "}, nil)
+// Каждая публичная операция, самостоятельно пересекающая границу БД, обязана
+// проверять инвариант САМА.
+//
+// Порядок вызовов гарантией не является: RunMigrations публичен, и команде,
+// которой нужны только миграции, пул не нужен — Connect она не вызовет. Если
+// проверка живёт лишь в Connect, общий адаптер по-прежнему разрешает тот самый
+// молчаливый уход в служебную базу postgres, ради которого её и добавляли.
+//
+// Живая БД не нужна: красный ответ приходит раньше сетевых действий. Каталог
+// миграций существует намеренно — иначе тест был бы зелёным из-за отсутствия
+// файлов, а не из-за проверки имени.
+func TestPublicOperationsRejectEmptyName(t *testing.T) {
+	dir := t.TempDir()
 
-	err := adapter.Connect(context.Background())
-	if err == nil {
-		t.Fatal("Connect принял конфигурацию без имени базы")
+	operations := []struct {
+		name string
+		run  func(*Adapter) error
+	}{
+		{"Connect", func(a *Adapter) error { return a.Connect(context.Background()) }},
+		{"RunMigrations", func(a *Adapter) error { return a.RunMigrations(context.Background(), dir) }},
 	}
-	if !strings.Contains(err.Error(), "DB_NAME") {
-		t.Fatalf("ошибка не называет причину: %v", err)
+
+	for _, operation := range operations {
+		for _, name := range []string{"", "   ", "\t\n"} {
+			t.Run(fmt.Sprintf("%s/%q", operation.name, name), func(t *testing.T) {
+				adapter := NewAdapter(&Config{Host: "localhost", Port: 5432, Name: name}, nil)
+
+				err := operation.run(adapter)
+				if err == nil {
+					t.Fatalf("%s принял конфигурацию без имени базы", operation.name)
+				}
+				if !strings.Contains(err.Error(), "DB_NAME") {
+					t.Fatalf("ошибка не называет причину: %v", err)
+				}
+			})
+		}
 	}
 }
 

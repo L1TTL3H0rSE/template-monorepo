@@ -189,8 +189,8 @@ happy-dom и настоящий Chromium и на этом поймал клас�
 | `.dockerignore` от корня контекста | да | `scripts/dockerignore.test.mjs` | да |
 | Схема адреса миграций | да | `postgres_test.go: TestMigrationDSNUsesPGX5` | да |
 | Установка CLI без `-tags pgx5` | да | нет: проверять нечего без `go install` в сеть | нет |
-| `DB_NAME` пуст или из пробелов | да | `postgres_test.go: TestNameMustBeMeaningful` | да |
-| Действующий ADR без условия пересмотра | да | `scripts/adoption.test.mjs` | да |
+| `DB_NAME` пуст или из пробелов | да | `postgres_test.go`: `TestNameMustBeMeaningful` (загрузка), `TestPublicOperationsRejectEmptyName` (обе публичные операции адаптера) | да |
+| Действующий ADR без условия пересмотра | да | `scripts/adoption.test.mjs` (инвариант), `scripts/init-project.test.mjs` (отказ до первой мутации и в `--dry-run`) | да |
 
 Одно проверено дальше тестов: `mage database:up` доходил до живого PostgreSQL —
 значит, CLI собран с нужным драйвером и схема `pgx5://` им принимается. А вот

@@ -31,7 +31,9 @@
 |---|---|
 | `scripts/dockerignore.test.mjs` | шаблон без `**/` |
 | `scripts/adoption.test.mjs` | действующий ADR без условия пересмотра |
+| `scripts/init-project.test.mjs` | предусловие перенесено после мутаций |
 | `postgres_test.go: TestNameMustBeMeaningful` | `DB_NAME` пустой или из пробелов |
+| `postgres_test.go: TestPublicOperationsRejectEmptyName` | `Validate` убран из `Connect` или `RunMigrations` |
 | `template-identity.test.mjs` | замена и проверка остатков разошлись |
 | `public-surface.test.ts` | каталог компонентов пуст |
 
@@ -75,6 +77,19 @@ go run github.com/magefile/mage generate:swag
 Модули проверяются **по отдельности**: красный `kit` не должен скрывать
 состояние сервиса, и наоборот. Общей команды «прогнать весь backend» нет
 намеренно.
+
+Если менялся `magefile.go` — отдельно, из каталога модуля:
+
+```bash
+go run github.com/magefile/mage -l
+go run github.com/magefile/mage lint
+```
+
+У Magefile тег сборки `//go:build mage`, поэтому `go build ./...`, `go vet ./...`
+и `go test ./...` его НЕ собирают: зелёный прогон ничего не говорит о файле,
+который в сборку не попал. `-l` компилирует Magefile и печатает цели, вторая
+команда доказывает, что цель ещё и выполняется. Цель для этого берётся
+безопасная: `database:up` доказала бы компиляцию ценой миграций в чужую базу.
 
 Заявленная в `go.mod` версия Go — это **пол**, а не пожелание. Go по умолчанию
 молча скачивает более новый тулчейн, если он требуется, и код начинает
@@ -188,6 +203,7 @@ git status --short   # пусто
 | `sqlc generate` | Несоответствие SQL схеме | Тестами это проверять бессмысленно |
 | Повторный `generate` + `git status` | Недетерминизм генератора | Проявится только на чужой машине |
 | Повторный запуск `bootstrap` | Неидемпотентный засев | Первый запуск всегда «работает» |
+| `mage -l` после правки `magefile.go` | Несобирающийся Magefile | `go build ./...` его исключает по тегу |
 
 ## Покрытие
 
