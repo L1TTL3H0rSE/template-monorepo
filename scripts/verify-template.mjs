@@ -120,7 +120,12 @@ try {
     }
   }, toolsOK);
   const dockerOK = await stage(docker, async () => {
-    try { return await run("docker", ["info", "--format", "{{.ServerVersion}}"], { timeout: 30_000 }); }
+    try {
+      const version = await run("docker", ["info", "--format", "{{.ServerVersion}}"], { timeout: 30_000 });
+      // Docker 25 может вернуть exit 0 и пустой stdout при недоступном daemon.
+      if (!/^\d+\.\d+\.\d+/.test(version)) throw new Error("docker info не вернул версию сервера");
+      return version;
+    }
     catch (error) { throw new Blocked(`Docker недоступен: ${error.message}`); }
   }, sourceOK && liveEnabled);
   const goOK = await stage(toolchain, async () => {

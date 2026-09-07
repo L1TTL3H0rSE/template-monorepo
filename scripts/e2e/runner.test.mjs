@@ -68,3 +68,23 @@ test("отчёт внутри исходного дерева отвергает
   assert.ok(!existsSync(output));
 });
 
+test("недоступный Docker даёт blocked даже при exit 0 у docker info", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "verification-docker-"));
+  try {
+    const output = join(dir, "report");
+    await command(process.execPath, [join(ROOT, "scripts/verify-template.mjs"), "--profile", "live-local", "--output-dir", output], {
+      expected: 2, timeout: 180_000,
+      env: { DOCKER_HOST: "tcp://127.0.0.1:1", DOCKER_CONTEXT: "", DOCKER_TLS_VERIFY: "", DOCKER_CERT_PATH: "" },
+    });
+    const result = JSON.parse(readFileSync(join(output, "report.json")));
+    assert.equal(result.status, "blocked");
+    assert.equal(result.stages.find(s => s.id === "docker").status, "blocked");
+    for (const name of ["acme", "overlap"]) {
+      assert.equal(result.stages.find(s => s.id === `${name}/postgres`).status, "blocked");
+      assert.equal(result.stages.find(s => s.id === `${name}/api`).status, "not-run");
+    }
+    assert.equal(result.stages.find(s => s.id === "cleanup").status, "passed");
+    assert.ok(!existsSync(result.workspace));
+  } finally { removeOwned(tmpdir(), dir); }
+});
+
