@@ -1,0 +1,9 @@
+{
+  "name": "template-verification-tools",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.58.2",
+    "pnpm": "11.22.0"
+  }
+}
