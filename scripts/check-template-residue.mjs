@@ -16,6 +16,7 @@ import {
   readTemplateMetadata,
   residueTokens,
   TEMPLATE_METADATA_FILE,
+  withoutProjectIdentity,
 } from "./template-identity.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -49,10 +50,11 @@ function main() {
     const lines = content.split(/\r?\n/);
 
     lines.forEach((line, index) => {
+      const remaining = withoutProjectIdentity(line, metadata.projectIdentity);
       for (const rule of tokens) {
         // containsToken применяет ТЕ ЖЕ правила границ, что и замена: иначе
         // проверка красная на дереве, которое инициализировано правильно.
-        if (containsToken(line, rule)) {
+        if (containsToken(remaining, rule)) {
           findings.push({
             file,
             line: index + 1,

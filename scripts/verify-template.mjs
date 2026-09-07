@@ -235,7 +235,7 @@ function consistency(dir, target) {
   assert.ok(config.includes(`title: "${target.displayName}"`));
   assert.ok(config.includes(`${target.npmScope}/components/styles`));
   const adoption = readFileSync(join(dir, "docs/decisions/ADOPTION.md"), "utf8");
-  const rows = adoption.split("\n").filter(line => /^\| \[ADR-/.test(line));
+  const rows = adoption.split("\n").filter(line => /^\| \[\d{4}\]/.test(line));
   assert.ok(rows.length > 0, "пустая таблица принятия ADR");
   for (const row of rows) assert.ok(row.includes("pending"), row);
   assert.ok(existsSync(join(dir, "backend/gotemplate/internal/infra/services/example")));

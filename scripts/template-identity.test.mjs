@@ -18,6 +18,7 @@ import {
   buildReplacements,
   containsToken,
   residueTokens,
+  withoutProjectIdentity,
 } from "./template-identity.mjs";
 
 const SOURCE = {
@@ -151,4 +152,19 @@ test("после замены остатков не остаётся", () => {
   );
 
   assert.deepEqual(residue, []);
+});
+
+test("новая идентичность со старой подстрокой допустима, остаток рядом виден", () => {
+  const target = {
+    displayName: "Sample Next", slug: "sample-next", repositoryName: "sample-repo-next",
+    npmScope: "@sample-next", goModulePrefix: "example.com/sample-next",
+  };
+  const hasResidue = content => residueTokens(SOURCE).some(rule =>
+    containsToken(withoutProjectIdentity(content, target), rule));
+  const result = replace('"@sample/api" sample/kit sample-repo Sample sample', target);
+  assert.equal(hasResidue(result), false);
+  for (const old of ["@sample/api", "sample/kit", "sample-repo", "Sample", "sample"]) {
+    assert.equal(hasResidue(`${result} ${old}`), true, old);
+  }
+  assert.equal(hasResidue("@sample/api"), true);
 });
