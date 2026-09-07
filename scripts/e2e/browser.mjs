@@ -18,6 +18,8 @@ export async function smoke(chromium, url, displayName, output, signal) {
         assert.ok((await page.title()).includes(displayName));
         await page.getByRole("link", { name: "Открыть пример" }).click();
         await page.getByRole("heading", { name: "Эйра Полуночная" }).waitFor();
+        const width = await page.evaluate(() => document.documentElement.scrollWidth);
+        assert.ok(width <= viewport.width, `страница ${width}px шире viewport ${viewport.width}px`);
         await page.getByRole("button", { name: "Создать", exact: true }).click();
         const dialog = page.getByRole("dialog");
         await dialog.getByRole("textbox", { name: "Имя", exact: true }).fill("Сквозной персонаж");

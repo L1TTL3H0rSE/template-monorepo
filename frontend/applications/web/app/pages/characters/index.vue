@@ -161,6 +161,7 @@ async function onCreate() {
 
   &__header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-04);

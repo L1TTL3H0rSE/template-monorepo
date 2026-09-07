@@ -87,4 +87,3 @@ test("недоступный Docker даёт blocked даже при exit 0 у d
     assert.ok(!existsSync(result.workspace));
   } finally { removeOwned(tmpdir(), dir); }
 });
-
