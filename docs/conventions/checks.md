@@ -178,6 +178,16 @@ node scripts/init-project.mjs --display-name "Acme Test" --slug acme-test \
 исходного шаблона не доказывает, что соберётся инициализированный проект
 ([`TEMPLATE.md`](../TEMPLATE.md)).
 
+Переносимая команда, которая сама создаёт копии из commit, проверяет обе
+identity, frontend, Go, Storybook, браузер и собственный PostgreSQL:
+
+```bash
+node scripts/verify-template.mjs
+```
+
+Профили, prerequisites, JSON-отчёт и cleanup описаны в
+[`TEMPLATE.md`](../TEMPLATE.md#воспроизводимая-сквозная-проверка).
+
 ## Детерминизм генераторов
 
 Генератор обязан давать одинаковый результат на любой машине. Проверка —

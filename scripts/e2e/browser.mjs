@@ -19,7 +19,7 @@ export async function smoke(chromium, url, displayName, output, signal) {
       await page.getByRole("heading", { name: "Эйра Полуночная" }).waitFor();
       await page.getByRole("button", { name: "Создать", exact: true }).click();
       const dialog = page.getByRole("dialog");
-      await dialog.getByLabel("Имя", { exact: true }).fill("Сквозной персонаж");
+      await dialog.getByRole("textbox", { name: "Имя", exact: true }).fill("Сквозной персонаж");
       await dialog.getByRole("button", { name: "Создать", exact: true }).click();
       await dialog.waitFor({ state: "hidden" });
       await page.getByRole("heading", { name: "Сквозной персонаж", exact: true }).waitFor();

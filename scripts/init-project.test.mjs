@@ -20,6 +20,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { snapshot } from "./e2e/runtime.mjs";
 
 const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 
@@ -92,7 +93,9 @@ test("валидный набор унаследованных ADR проход�
   const root = fixture(VALID);
   t.after(() => rmSync(root, { recursive: true, force: true }));
 
+  const before = snapshot(root);
   const result = initialize(root, ["--dry-run"]);
+  assert.equal(snapshot(root), before);
 
   assert.equal(result.status, 0, `инициализация отклонила валидный шаблон: ${result.stderr}`);
   assert.match(result.stdout, /будут изменены файлы/);
@@ -102,7 +105,9 @@ test("действующий ADR без условия останавливае�
   const root = fixture(INVALID);
   t.after(() => rmSync(root, { recursive: true, force: true }));
 
+  const before = snapshot(root);
   const result = initialize(root);
+  assert.equal(snapshot(root), before);
 
   assert.equal(result.status, 1, "инициализация приняла ADR без условия пересмотра");
   assert.match(result.stderr, /Пересмотр в потомке/);
@@ -125,7 +130,9 @@ test("--dry-run сообщает об отказе, а не отчитывает
   const root = fixture(INVALID);
   t.after(() => rmSync(root, { recursive: true, force: true }));
 
+  const before = snapshot(root);
   const result = initialize(root, ["--dry-run"]);
+  assert.equal(snapshot(root), before);
 
   assert.equal(result.status, 1, "--dry-run прошёл на шаблоне, который настоящий запуск отвергает");
   assert.match(result.stderr, /Пересмотр в потомке/);
@@ -143,7 +150,9 @@ test("нарушенная раскладка шаблона отвергает�
   writeFileSync(join(root, "docs", "proposals", "idea.md"), "# Идея");
   writeFileSync(join(root, "docs", "README.md"), "# Документация");
 
+  const before = snapshot(root);
   const result = initialize(root);
+  assert.equal(snapshot(root), before);
 
   assert.equal(result.status, 1, "инициализация приняла шаблон с битым индексом");
   assert.match(result.stderr, /строка индекса/);

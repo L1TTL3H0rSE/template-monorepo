@@ -64,18 +64,26 @@ export async function stop(proc) {
     await Promise.race([proc.done, delay(1500)]);
     try { process.kill(-child.pid, "SIGKILL"); } catch (e) { if (e.code !== "ESRCH") throw e; }
   }
-  await Promise.race([proc.done, delay(5000).then(() => { throw new Error(`процесс ${child.pid} не завершился`); })]);
+  let timer;
+  try {
+    await Promise.race([proc.done, new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`процесс ${child.pid} не завершился`)), 5000);
+    })]);
+  } finally { clearTimeout(timer); }
 }
 
 export async function command(command, args, options = {}) {
   if (options.signal?.aborted) throw new Error("проверка прервана");
   const proc = launch(command, args, options);
   let timeout = false;
-  const abort = () => { void stop(proc); };
+  let stopping;
+  const stopOnce = () => stopping ??= stop(proc);
+  const abort = () => { void stopOnce().catch(() => {}); };
   options.signal?.addEventListener("abort", abort, { once: true });
-  const timer = setTimeout(() => { timeout = true; void stop(proc); }, options.timeout ?? 15 * 60_000);
+  const timer = setTimeout(() => { timeout = true; abort(); }, options.timeout ?? 15 * 60_000);
   try {
     const result = await proc.done;
+    if (stopping) await stopping;
     if (result.error?.code === "ENOENT") throw new Blocked(`не найден ${command}`);
     if (result.error) throw result.error;
     if (timeout) throw new Error(`таймаут: ${command} ${args.join(" ")}`);

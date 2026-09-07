@@ -246,6 +246,7 @@ export function containsToken(line, { token, wholeWord }) {
 /** Новая идентичность может содержать старую; исключаем значения, а не файлы. */
 export function withoutProjectIdentity(content, identity) {
   const rules = Object.values(identity)
+    .filter(value => typeof value === "string" && value.length > 0)
     .map(from => ({ from, to: "\0", kind: "project-identity", wholeWord: true }))
     .sort((a, b) => b.from.length - a.from.length);
   return applyReplacements(content, rules).result;

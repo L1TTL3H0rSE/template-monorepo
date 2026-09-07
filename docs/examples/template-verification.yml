@@ -1,0 +1,30 @@
+# Неактивный пример: для подключения перенесите в .github/workflows/.
+name: Template verification
+on:
+  workflow_dispatch:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+          cache: false
+      # Системные зависимости ставятся только в одноразовом CI-хосте.
+      - run: npm ci --prefix scripts/e2e --no-audit --no-fund
+      - run: node scripts/e2e/node_modules/playwright/cli.js install-deps chromium
+      - run: node --test "scripts/*.test.mjs" "scripts/e2e/*.test.mjs"
+      - run: node scripts/verify-template.mjs --output-dir "$RUNNER_TEMP/template-report"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: template-verification
+          path: ${{ runner.temp }}/template-report
