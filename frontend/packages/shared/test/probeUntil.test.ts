@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { probeUntil } from "../src/data/probeUntil";
 
 describe("probeUntil", () => {
@@ -38,7 +39,9 @@ describe("probeUntil", () => {
     let calls = 0;
     const check = async () => {
       calls++;
-      if (calls === 1) throw new Error("network");
+      if (calls === 1) {
+        throw new Error("network");
+      }
       return calls >= 2;
     };
 

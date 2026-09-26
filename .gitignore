@@ -17,6 +17,8 @@ dist/
 .nuxt/
 .output/
 storybook-static/
+coverage/
+test-results/
 *.tsbuildinfo
 
 # Кеши и IDE

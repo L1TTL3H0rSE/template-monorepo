@@ -1,4 +1,5 @@
 import { computed, onBeforeUnmount, ref, type ComputedRef } from "vue";
+
 import { breakpoints, type BreakpointName } from "../utils/_breakpoints";
 import { isBrowser } from "../utils/browser";
 

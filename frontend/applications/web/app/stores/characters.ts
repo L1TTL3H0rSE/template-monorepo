@@ -3,13 +3,14 @@
 // Причина в тестируемости: стор — чистая логика, и его юнит-тест должен
 // запускаться в обычном Node-окружении, без слоя авто-импортов Nuxt. Явный
 // импорт ничего не ломает в рантайме и снимает скрытую зависимость от сборщика.
-import { computed, onScopeDispose, ref, watch } from "vue";
-import { defineStore } from "pinia";
 import { isCancelled } from "@starter/api/core";
 import { useOptimisticList, usePagination } from "@starter/shared/data";
 import { useSearchQuery } from "@starter/shared/search";
-import type { Character, CharacterDraft } from "~/contracts/character";
+import { defineStore } from "pinia";
+import { computed, onScopeDispose, ref, watch } from "vue";
+
 import { useApi } from "~/api/api";
+import type { Character, CharacterDraft } from "~/contracts/character";
 
 /**
  * Стор списка персонажей.
@@ -69,17 +70,23 @@ export const useCharactersStore = defineStore("characters", () => {
         { signal: controller.signal },
       );
 
-      if (generation !== loadGeneration) return;
+      if (generation !== loadGeneration) {
+        return;
+      }
 
       serverItems.value = page.items;
       pagination.setTotal(page.total);
     } catch (caught) {
       // Устаревшее чтение молчит: его ошибка относится к состоянию, которое
       // пользователь уже сменил.
-      if (generation !== loadGeneration) return;
+      if (generation !== loadGeneration) {
+        return;
+      }
       // Отмена — не отказ. Показать её как ошибку означает мигать
       // «Сервис недоступен» на каждом нажатии клавиши в поиске.
-      if (isCancelled(caught) || controller.signal.aborted) return;
+      if (isCancelled(caught) || controller.signal.aborted) {
+        return;
+      }
 
       error.value =
         caught instanceof Error
@@ -89,7 +96,9 @@ export const useCharactersStore = defineStore("characters", () => {
     } finally {
       // Индикатор снимает только актуальное чтение: иначе отменённый запрос
       // погасит загрузку, которая всё ещё идёт.
-      if (generation === loadGeneration) pending.value = false;
+      if (generation === loadGeneration) {
+        pending.value = false;
+      }
     }
   }
 
@@ -104,16 +113,16 @@ export const useCharactersStore = defineStore("characters", () => {
    * гарантированно отменяет первый, из-за чего в devtools видно «отменённый»
    * запрос при каждом поиске.
    */
-  watch(search.applied, () => {
+  watch(search.applied, async () => {
     if (pagination.page.value === 1) {
-      void load();
+      await load();
       return;
     }
 
     // Сброс страницы разбудит наблюдателя ниже, и чтение выполнит он.
     pagination.reset();
   });
-  watch(pagination.page, () => void load());
+  watch(pagination.page, load);
 
   /**
    * Дождаться, пока сервер догонит запись, и снять оверлей.
@@ -143,7 +152,7 @@ export const useCharactersStore = defineStore("characters", () => {
     pagination.setTotal(pagination.total.value + 1);
 
     // Опрос идёт фоном: интерфейс не блокируется ожиданием конвейера.
-    void reconcile(created.id, async () => {
+    reconcile(created.id, async () => {
       const page = await api.characters.search({
         query: created.name,
         limit: 20,
@@ -151,7 +160,7 @@ export const useCharactersStore = defineStore("characters", () => {
       });
 
       return page.items.some((item) => item.id === created.id);
-    });
+    }).catch(reportBackgroundError);
 
     return created;
   }
@@ -162,14 +171,18 @@ export const useCharactersStore = defineStore("characters", () => {
     optimistic.trackRemove(id);
     pagination.setTotal(Math.max(0, pagination.total.value - 1));
 
-    void reconcile(id, async () => {
+    reconcile(id, async () => {
       const page = await api.characters.search({
         limit: pagination.perPage.value,
         offset: pagination.offset.value,
       });
 
       return !page.items.some((item) => item.id === id);
-    });
+    }).catch(reportBackgroundError);
+  }
+
+  function reportBackgroundError(caught: unknown) {
+    error.value = caught instanceof Error ? caught.message : String(caught);
   }
 
   // Уход со страницы не должен оставлять чтение в полёте: ответ уже никому не

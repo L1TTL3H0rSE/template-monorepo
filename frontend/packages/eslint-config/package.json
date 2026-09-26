@@ -9,9 +9,19 @@
     "./vue": "./vue.js",
     "./nuxt": "./nuxt.js",
     "./storybook": "./storybook.js",
-    "./prettier": "./shared/prettier.js"
+    "./prettier": "./shared/prettier.js",
+    "./typed": "./typed.js",
+    "./boundaries": "./boundaries.js"
   },
-  "files": ["vue.js", "nuxt.js", "storybook.js", "shared"],
+  "files": [
+    "vue.js",
+    "nuxt.js",
+    "storybook.js",
+    "shared",
+    "typed.js",
+    "conventions.js",
+    "boundaries.js"
+  ],
   "peerDependencies": {
     "eslint": ">=9"
   },
@@ -23,6 +33,16 @@
     "eslint-plugin-vue": "catalog:",
     "prettier": "catalog:",
     "typescript-eslint": "catalog:",
-    "vue-eslint-parser": "catalog:"
+    "vue-eslint-parser": "catalog:",
+    "eslint-plugin-import-x": "catalog:",
+    "eslint-plugin-vuejs-accessibility": "catalog:"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "eslint": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -1,4 +1,5 @@
 import { defineConfig, mergeConfig } from "vitest/config";
+
 import viteConfig from "./vite.config.ts";
 
 // Конфигурация тестов наследует resolve/css/plugins от сборки: тест должен

@@ -7,9 +7,10 @@ import {
   Modal,
   TextField,
 } from "@starter/components";
+
+import { useCharacterForm } from "~/composables/useCharacterForm";
 import type { CharacterStatus } from "~/contracts/character";
 import { useCharactersStore } from "~/stores/characters";
-import { useCharacterForm } from "~/composables/useCharacterForm";
 
 useHead({ title: "Персонажи" });
 

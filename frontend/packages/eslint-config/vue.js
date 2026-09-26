@@ -1,9 +1,12 @@
 import js from "@eslint/js";
-import tseslint from "typescript-eslint";
-import pluginVue from "eslint-plugin-vue";
-import vueParser from "vue-eslint-parser";
 import prettierConfig from "eslint-config-prettier";
 import prettierPlugin from "eslint-plugin-prettier";
+import pluginVue from "eslint-plugin-vue";
+import accessibility from "eslint-plugin-vuejs-accessibility";
+import tseslint from "typescript-eslint";
+import vueParser from "vue-eslint-parser";
+
+import conventions from "./conventions.js";
 import prettierOptions from "./shared/prettier.js";
 
 /**
@@ -19,6 +22,8 @@ export default tseslint.config(
       "**/.nuxt/**",
       "**/.output/**",
       "**/storybook-static/**",
+      "**/coverage/**",
+      "**/test-results/**",
       "**/node_modules/**",
       "**/*.gen.ts",
       "**/auto-imports.d.ts",
@@ -48,10 +53,7 @@ export default tseslint.config(
 
       // script setup сверху, template в середине, style внизу: одинаковый
       // порядок делает диффы читаемыми.
-      "vue/block-order": [
-        "error",
-        { order: ["script", "template", "style"] },
-      ],
+      "vue/block-order": ["error", { order: ["script", "template", "style"] }],
       "vue/component-api-style": ["error", ["script-setup"]],
       "vue/multi-word-component-names": "off",
       "vue/require-default-prop": "off",
@@ -67,5 +69,20 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    plugins: { "vuejs-accessibility": accessibility },
+    rules: {
+      ...Object.fromEntries(
+        accessibility.configs["flat/recommended"].flatMap((entry) =>
+          Object.keys(entry.rules ?? {}).map((name) => [name, "warn"]),
+        ),
+      ),
+      "vuejs-accessibility/label-has-for": [
+        "warn",
+        { required: { some: ["nesting", "id"] } },
+      ],
+    },
+  },
   prettierConfig,
+  conventions,
 );

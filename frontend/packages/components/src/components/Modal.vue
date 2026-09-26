@@ -2,6 +2,7 @@
 // Разметка обёрнута в Teleport to="body": иначе overflow: hidden или transform
 // родителя обрежет диалог, и его придётся «чинить» ростом z-index.
 import { onBeforeUnmount, watch } from "vue";
+
 import { lockScroll, unlockScroll } from "../utils/dom";
 
 export type ModalSize = "small" | "medium" | "large";
@@ -24,19 +25,25 @@ function close() {
 }
 
 function onBackdropClick() {
-  if (props.closeOnBackdrop) close();
+  if (props.closeOnBackdrop) {
+    close();
+  }
 }
 
 // Escape закрывает диалог: это ожидаемое поведение, а не «дополнительная
 // фича». Слушатель висит на окне только пока диалог открыт.
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") close();
+  if (event.key === "Escape") {
+    close();
+  }
 }
 
 watch(
   open,
   (isOpen) => {
-    if (typeof document === "undefined") return;
+    if (typeof document === "undefined") {
+      return;
+    }
 
     if (isOpen) {
       lockScroll();
@@ -52,7 +59,9 @@ watch(
 // Размонтирование при открытом диалоге не должно оставить страницу
 // заблокированной.
 onBeforeUnmount(() => {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined") {
+    return;
+  }
   unlockScroll();
   window.removeEventListener("keydown", onKeydown);
 });

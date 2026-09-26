@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { useAsyncState } from "../src/data/useAsyncState";
 
 describe("useAsyncState", () => {
@@ -18,7 +19,9 @@ describe("useAsyncState", () => {
   it("сбрасывает прошлую ошибку при повторе", async () => {
     let shouldFail = true;
     const state = useAsyncState(async () => {
-      if (shouldFail) throw new Error("boom");
+      if (shouldFail) {
+        throw new Error("boom");
+      }
       return "ok";
     });
 

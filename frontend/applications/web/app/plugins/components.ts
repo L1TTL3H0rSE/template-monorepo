@@ -1,5 +1,6 @@
-import { NuxtLink } from "#components";
 import { componentsPlugin } from "@starter/components";
+
+import { NuxtLink } from "#components";
 
 /**
  * Установка дизайн-системы — задача плагина, а не компонента.

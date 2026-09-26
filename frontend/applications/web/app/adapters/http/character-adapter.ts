@@ -5,6 +5,7 @@ import {
   parseResponse,
   type ExampleViewDto,
 } from "@starter/api/gateway";
+
 import type {
   Character,
   CharacterApi,

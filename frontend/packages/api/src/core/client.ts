@@ -3,7 +3,7 @@ import {
   isAbort,
   NetworkError,
   RequestCancelledError,
-} from "./errors";
+} from "./errors.js";
 
 /** Конверт успешного ответа бэкенда (kit/ginx SuccessResponse). */
 export type SuccessEnvelope<T> = {
@@ -54,7 +54,9 @@ export class ApiClient {
     for (const [key, value] of Object.entries(options.query ?? {})) {
       // Пустые параметры не отправляются: `?q=&page=` заставляет бэкенд
       // отличать «не передано» от «передано пустым» без причины.
-      if (value === undefined || value === null || value === "") continue;
+      if (value === undefined || value === null || value === "") {
+        continue;
+      }
       url.searchParams.set(key, String(value));
     }
 
@@ -64,7 +66,9 @@ export class ApiClient {
     }
 
     const token = await this.getToken?.();
-    if (token) headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     let response: Response;
     try {
@@ -95,7 +99,9 @@ export class ApiClient {
       throw new RequestCancelledError();
     }
 
-    if (response.status === 204) return undefined as T;
+    if (response.status === 204) {
+      return undefined as T;
+    }
 
     // Чтение тела — вторая точка, где может случиться отмена: заголовки уже
     // пришли, поток ещё качается. Голый `.catch(() => null)` превратил бы

@@ -53,10 +53,14 @@ export function usePagination(initialPerPage = 20): Pagination {
       }
     },
     next: () => {
-      if (page.value < totalPages.value) page.value += 1;
+      if (page.value < totalPages.value) {
+        page.value += 1;
+      }
     },
     previous: () => {
-      if (page.value > 1) page.value -= 1;
+      if (page.value > 1) {
+        page.value -= 1;
+      }
     },
     reset: () => {
       page.value = 1;

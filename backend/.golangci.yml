@@ -1,0 +1,66 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - contextcheck
+    - depguard
+    - durationcheck
+    - errcheck
+    - errorlint
+    - gosec
+    - govet
+    - ineffassign
+    - loggercheck
+    - nilerr
+    - nilnesserr
+    - noctx
+    - nolintlint
+    - reassign
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - unused
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    depguard:
+      rules:
+        deprecated:
+          files: ["$all"]
+          deny:
+            - pkg: github.com/pkg/errors
+              desc: Используйте errors и fmt.Errorf с %w.
+            - pkg: io/ioutil
+              desc: Используйте io и os.
+        dtos:
+          files: ["**/internal/domain/dtos/**"]
+          deny:
+            - pkg: github.com/gin-gonic/gin
+              desc: DTO не зависит от HTTP.
+            - pkg: github.com/jackc/pgx
+              desc: DTO не зависит от базы данных.
+            - pkg: github.com/nats-io
+              desc: DTO не зависит от транспорта сообщений.
+        services:
+          files: ["**/internal/infra/services/**"]
+          deny:
+            - pkg: github.com/gin-gonic/gin
+              desc: Сценарий не зависит от HTTP.
+            - pkg: github.com/swaggo
+              desc: Сценарий не зависит от описания HTTP.
+        kit:
+          files: ["**/kit/**"]
+          deny:
+            - pkg: starter/gotemplate
+              desc: Общая инфраструктура не зависит от сервиса.
+        public:
+          files: ["**/pkg/**"]
+          deny:
+            - pkg: starter/gotemplate/internal
+              desc: Публичный контракт не зависит от внутренностей сервиса.
+  exclusions:
+    generated: strict
+    presets: []

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { MockCharacterAdapter } from "~/adapters/mock/character-adapter";
 
 /**

@@ -57,7 +57,7 @@ func TestGetByIDRejectsMalformedUUID(t *testing.T) {
 	router := newTestRouter(&stubService{})
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/example/not-a-uuid", nil))
+	router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/example/not-a-uuid", nil))
 
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
@@ -81,7 +81,7 @@ func TestDomainErrorCategoriesMapToStatuses(t *testing.T) {
 		router := newTestRouter(&stubService{err: testCase.err})
 
 		recorder := httptest.NewRecorder()
-		router.ServeHTTP(recorder, httptest.NewRequest(
+		router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(),
 			http.MethodGet, "/example/11111111-1111-1111-1111-111111111111", nil))
 
 		if recorder.Code != testCase.status {
@@ -94,7 +94,7 @@ func TestSearchRejectsOversizedPage(t *testing.T) {
 	router := newTestRouter(&stubService{})
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/example?size=1000", nil))
+	router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/example?size=1000", nil))
 
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d (validate:lte=100 не применился)",
@@ -106,7 +106,7 @@ func TestSearchAppliesDefaultPageSize(t *testing.T) {
 	router := newTestRouter(&stubService{})
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/example", nil))
+	router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/example", nil))
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)

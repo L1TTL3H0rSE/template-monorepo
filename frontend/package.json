@@ -8,20 +8,26 @@
     "node": ">=22.13"
   },
   "scripts": {
-    "build:local": "pnpm --filter @starter/shared build && pnpm --filter @starter/api build && pnpm --filter @starter/components build:local",
+    "build:local": "pnpm --filter @starter/shared build && pnpm --filter @starter/api build && pnpm --filter @starter/components build:local && pnpm check:packages",
     "dev": "pnpm build:local && pnpm --filter @starter/web dev",
     "dev:components": "pnpm --filter @starter/components dev",
     "build": "pnpm build:local && pnpm --filter @starter/web build",
     "storybook": "pnpm --filter @starter/components dev",
     "build:storybook": "pnpm --filter @starter/components build-storybook",
-    "lint": "pnpm -r --if-present lint",
+    "lint": "pnpm lint:tooling && pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test",
+    "test": "node --test scripts/*.test.mjs && pnpm -r --if-present test",
     "perf:bundle": "pnpm build && node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt",
-    "perf:bundle:json": "node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt --json"
+    "perf:bundle:json": "node scripts/report-client-assets.mjs applications/web/.output/public/_nuxt --json",
+    "lint:tooling": "eslint scripts eslint.config.mjs",
+    "test:coverage": "pnpm -r --if-present test:coverage",
+    "check:dist": "node scripts/dist-fresh.mjs check",
+    "check:packages": "node scripts/check-packages.mjs"
   },
   "devDependencies": {
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@starter/eslint-config": "workspace:*",
+    "eslint": "catalog:"
   }
 }

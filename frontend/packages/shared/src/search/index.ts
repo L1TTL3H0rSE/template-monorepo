@@ -1,1 +1,1 @@
-export * from "./useSearchQuery";
+export * from "./useSearchQuery.js";

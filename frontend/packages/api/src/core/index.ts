@@ -1,2 +1,2 @@
-export * from "./client";
-export * from "./errors";
+export * from "./client.js";
+export * from "./errors.js";

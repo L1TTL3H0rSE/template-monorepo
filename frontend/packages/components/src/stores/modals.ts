@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { computed, markRaw, shallowReactive, type Component } from "vue";
+
 import { lockScroll, unlockScroll } from "../utils/dom";
 
 type ModalEntry = {
@@ -46,23 +47,31 @@ export const useModalsStore = defineStore("components/modals", () => {
       onClose: options.onClose,
     });
 
-    if (shouldLock) lockScroll();
+    if (shouldLock) {
+      lockScroll();
+    }
 
     return key;
   }
 
   function close(key: string, payload?: unknown): void {
     const entry = entries.get(key);
-    if (!entry) return;
+    if (!entry) {
+      return;
+    }
 
     entry.onClose?.(payload);
     entries.delete(key);
 
-    if (entries.size === 0) unlockScroll();
+    if (entries.size === 0) {
+      unlockScroll();
+    }
   }
 
   function closeAll(): void {
-    for (const key of [...entries.keys()]) close(key);
+    for (const key of [...entries.keys()]) {
+      close(key);
+    }
   }
 
   return { entries, stack, activeKey, open, close, closeAll };

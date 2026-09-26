@@ -42,14 +42,18 @@ export function useFormState<T extends object>(initial: T): FormState<T> {
   function reset(next?: T): void {
     const target = next ?? (JSON.parse(initialSnapshot.value) as T);
     Object.assign(values, structuredClone(target));
-    if (next) initialSnapshot.value = JSON.stringify(next);
+    if (next) {
+      initialSnapshot.value = JSON.stringify(next);
+    }
     setErrors({});
   }
 
   async function submit(
     handler: (values: T) => Promise<void>,
   ): Promise<boolean> {
-    if (submittingFlag.value) return false;
+    if (submittingFlag.value) {
+      return false;
+    }
 
     submittingFlag.value = true;
     setErrors({});

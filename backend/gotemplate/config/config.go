@@ -21,9 +21,9 @@ type Config struct {
 	Database postgres.Config `env-prefix:"DB_"`
 }
 
-func Load() (*Config, error) {
+func Load(ctx context.Context) (*Config, error) {
 	cfg := Config{}
-	if err := configloader.LoadEnv(context.Background(), "gotemplate", &cfg); err != nil {
+	if err := configloader.LoadEnv(ctx, "gotemplate", &cfg); err != nil {
 		return nil, err
 	}
 

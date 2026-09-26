@@ -25,11 +25,11 @@ import { snapshot } from "./e2e/runtime.mjs";
 const SCRIPTS = dirname(fileURLToPath(import.meta.url));
 
 const SOURCE_IDENTITY = {
-  displayName: "Starter",
-  slug: "starter",
-  repositoryName: "template-monorepo",
-  npmScope: "@starter",
-  goModulePrefix: "starter",
+  displayName: "Fixture Seed",
+  slug: "fixtureseed",
+  repositoryName: "fixture-monorepo",
+  npmScope: "@fixtureseed",
+  goModulePrefix: "fixtureseed",
 };
 
 const TARGET_ARGUMENTS = [
@@ -74,7 +74,7 @@ function fixture(decisions) {
   }
 
   // Маркеры двух мутаций: замены идентичности и разделения памяти.
-  writeFileSync(join(root, "docs", "MARKER.md"), "# @starter/web в template-monorepo");
+  writeFileSync(join(root, "docs", "MARKER.md"), `# ${SOURCE_IDENTITY.npmScope}/web в ${SOURCE_IDENTITY.repositoryName}`);
   writeFileSync(join(root, "docs", "PROJECT_MEMORY.md"), "# Память проекта");
 
   return root;
@@ -88,6 +88,27 @@ function initialize(root, extra = []) {
 
 const VALID = { "0001-demo.md": decision("0001", { trigger: "появился второй сервис" }) };
 const INVALID = { ...VALID, "0002-demo.md": decision("0002") };
+
+test("инициализация сохраняет рецепты проверок и переименовывает конфиги", (t) => {
+  const root = fixture(VALID);
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, "backend"));
+  mkdirSync(join(root, "docs/conventions"));
+  mkdirSync(join(root, "docs/proposals"));
+  writeFileSync(join(root, "backend/.golangci.yml"), `pkg: ${SOURCE_IDENTITY.goModulePrefix}/gotemplate\n`);
+  writeFileSync(join(root, "docs/conventions/optional-quality.md"), `Проверки ${SOURCE_IDENTITY.npmScope}/web`);
+  writeFileSync(join(root, "docs/proposals/idea.md"), "Предложение");
+  writeFileSync(join(root, "docs/README.md"), "| [`proposals/`](proposals/) | Идеи, зафиксированные, но ещё не принятые |\n");
+  const result = initialize(root);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readFileSync(join(root, "backend/.golangci.yml"), "utf8"), /example\.com\/acme\/gotemplate/);
+  assert.match(readFileSync(join(root, "docs/conventions/optional-quality.md"), "utf8"), /@acme\/web/);
+  assert.ok(!existsSync(join(root, "docs/proposals")));
+  assert.match(readFileSync(join(root, "docs/decisions/ADOPTION.md"), "utf8"), /pending/);
+  writeFileSync(join(root, "backend/.golangci.yml"), `pkg: ${SOURCE_IDENTITY.goModulePrefix}/gotemplate\n`);
+  const residue = spawnSync(process.execPath, [join(root, "scripts/check-template-residue.mjs")], { encoding: "utf8" });
+  assert.notEqual(residue.status, 0, "остаток идентичности должен отклоняться");
+});
 
 test("валидный набор унаследованных ADR проходит предусловие", (t) => {
   const root = fixture(VALID);
@@ -116,7 +137,7 @@ test("действующий ADR без условия останавливае�
   // Главное утверждение: отказ произошёл раньше любой записи.
   assert.match(
     readFileSync(join(root, "docs", "MARKER.md"), "utf8"),
-    /@starter/,
+    /@fixtureseed/,
     "идентичность уже заменена: предусловие проверено после мутации",
   );
   assert.ok(existsSync(join(root, "docs", "PROJECT_MEMORY.md")), "память проекта уже разделена");
@@ -162,7 +183,7 @@ test("нарушенная раскладка шаблона отвергает�
   );
   assert.match(
     readFileSync(join(root, "docs", "MARKER.md"), "utf8"),
-    /@starter/,
+    /@fixtureseed/,
     "идентичность заменена до того, как отказ состоялся",
   );
 });

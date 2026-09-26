@@ -72,7 +72,10 @@ func Test() error {
 
 // Lint — статический анализ.
 func Lint() error {
-	return sh.Run("go", "vet", "./...")
+	if err := sh.Run("go", "vet", "./..."); err != nil {
+		return err
+	}
+	return sh.Run("node", "../../scripts/lint-go.mjs")
 }
 
 // Up применяет миграции.

@@ -3,6 +3,42 @@
 Прогоняются **до** объявления задачи завершённой. Красная проверка — причина
 остановиться, а не понизить порог.
 
+## Команды базы качества
+
+Из корня: `node scripts/check-repository.mjs` и `node --test scripts/*.test.mjs`.
+Проверяются UTF-8, индекс ADR и сами проверки/инициализация. Дополнительно
+`git diff --check` проверяет whitespace изменённых файлов.
+
+Из каждого Go-модуля после build/vet/test:
+`node ../../scripts/lint-go.mjs`. Скрипт закрепляет golangci-lint 2.12.2;
+первый запуск требует загрузки инструмента, последующие используют Go cache.
+Локальный произвольный бинарь golangci-lint не подменяет закреплённую версию.
+Кеш анализа по умолчанию — `.cache/golangci-lint` внутри модуля: диагностики
+с абсолютными путями не должны переезжать между checkout. Если переопределяете
+`GOLANGCI_LINT_CACHE`, сохраняйте отдельный каталог для каждого checkout.
+При изменении политики выполните из корня `node scripts/test-go-lint.mjs`: это
+реальные PASS/FAIL-пробы errcheck и depguard в изолированных Go-модулях,
+включая границы DTO, сервисов, kit и публичных пакетов.
+При добавлении сервиса расширьте first-party запреты depguard для kit/public/DTO.
+
+Из frontend: `pnpm build:local`, `pnpm lint`, `pnpm typecheck`, `pnpm test`.
+Перед первым lint/typecheck приложения выполните `pnpm --filter @starter/web exec nuxt prepare`.
+Сборка библиотек проверяет выходные импорты и пишет stamp; `pnpm check:packages`
+проверяет свежесть и реальный импорт публичных JS exports. Wildcard exports
+должны находить файлы; потребление SCSS API проверяет сборка приложения.
+После правки исходников
+без пересборки `pnpm check:dist` обязан завершиться ошибкой.
+Typecheck отдельно охватывает тесты/config через tsconfig.lint.json. Node-скрипты
+frontend и сам eslint-config включены в lint. Отрицательные пробы promise/boundary
+правил входят в `pnpm test`, а не лежат отдельной незапускаемой командой.
+
+Новые правила promises/imports/границ/curly обязательны. A11y пока выдаёт warn:
+это сигнал для исправления пользовательского поведения, не блокирующая проверка.
+Расширения, включая browser tests, race, security и контракты, выбираются по
+[готовым рецептам](optional-quality.md). Они не считаются включёнными заранее.
+Для Docker/shell используйте приведённые там штатные команды при изменении этих
+файлов; проверяйте каждый shell-файл отдельно.
+
 ## Проверка обязана уметь падать
 
 Новая проверка — гейт, охранное правило, политика, preflight, дымовой прогон —
@@ -169,6 +205,7 @@ pnpm perf:bundle
 ```bash
 node --test "scripts/*.test.mjs"
 node scripts/check-template-residue.mjs
+node scripts/check-repository.mjs
 node scripts/init-project.mjs --display-name "Acme Test" --slug acme-test \
   --repository-name acme-test --npm-scope @acme-test \
   --go-module-prefix example.com/acme-test --dry-run
@@ -252,8 +289,8 @@ remapping, таким и было — просто это не было видн
 
 ## Локальные артефакты
 
-Не коммитятся: `dist`, `.nuxt`, `.output`, `storybook-static`, `node_modules`,
-`bin`, `.env`.
+Не коммитятся: `dist`, `.nuxt`, `.output`, `storybook-static`, `coverage`,
+`test-results`, `node_modules`, `bin`, `.env`.
 
 Проверка перед коммитом:
 
@@ -269,8 +306,8 @@ node --test "scripts/*.test.mjs"
 node scripts/check-template-residue.mjs
 
 # backend
-(cd backend/kit && go build ./... && go vet ./... && go test ./...)
-(cd backend/gotemplate && go build ./... && go vet ./... && go test ./...)
+(cd backend/kit && go build ./... && go vet ./... && go test ./... && node ../../scripts/lint-go.mjs)
+(cd backend/gotemplate && go build ./... && go vet ./... && go test ./... && node ../../scripts/lint-go.mjs)
 
 # frontend
 (cd frontend && pnpm build:local && pnpm lint && pnpm typecheck && pnpm test)

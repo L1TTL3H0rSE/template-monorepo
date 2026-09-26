@@ -10,7 +10,9 @@ let lockCount = 0;
  * темой, а не спрятано в атрибуте style.
  */
 export function lockScroll(): void {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined") {
+    return;
+  }
 
   lockCount += 1;
   if (lockCount === 1) {
@@ -21,7 +23,9 @@ export function lockScroll(): void {
 
 /** Снимает блокировку, когда закрылся последний оверлей. */
 export function unlockScroll(): void {
-  if (typeof document === "undefined") return;
+  if (typeof document === "undefined") {
+    return;
+  }
 
   lockCount = Math.max(0, lockCount - 1);
   if (lockCount === 0) {

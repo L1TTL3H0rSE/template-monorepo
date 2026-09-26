@@ -1,5 +1,6 @@
 import { shallowReactive } from "vue";
-import { probeUntil, type ProbeOptions } from "./probeUntil";
+
+import { probeUntil, type ProbeOptions } from "./probeUntil.js";
 
 export type OptimisticList<T> = {
   /** Наложить серверную выдачу на локальные правки. */

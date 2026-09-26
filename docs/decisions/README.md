@@ -51,5 +51,6 @@ ADR фиксирует **границы** решения и его цену, ч�
 | [0005](0005-frontend-ports-and-adapters.md) | Фронтенд зависит от порта, а не от транспорта | accepted |
 | [0006](0006-packages-export-dist.md) | Пакеты workspace экспортируют `dist` | accepted |
 | [0007](0007-optimistic-ui-bounded-probe.md) | Оптимистичный оверлей вместо перезагрузки после мутации | accepted |
+| [0008](0008-quality-checks.md) | Обязательные проверки и рецепты расширения | accepted |
 
 Шаблон: [`_template.md`](_template.md).

@@ -24,8 +24,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node ../../scripts/check-import-output.mjs dist && node ../../scripts/dist-fresh.mjs write",
+    "typecheck": "tsc --noEmit -p tsconfig.lint.json",
     "test": "vitest run",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

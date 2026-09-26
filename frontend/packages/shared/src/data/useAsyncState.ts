@@ -40,21 +40,31 @@ export function useAsyncState<T>(
       const result = await loader();
 
       // Пришёл ответ на устаревший запуск — молча выбрасываем.
-      if (run !== currentRun) return undefined;
+      if (run !== currentRun) {
+        return undefined;
+      }
 
       data.value = result;
 
       return result;
     } catch (caught) {
-      if (run === currentRun) error.value = caught;
+      if (run === currentRun) {
+        error.value = caught;
+      }
 
       return undefined;
     } finally {
-      if (run === currentRun) pending.value = false;
+      if (run === currentRun) {
+        pending.value = false;
+      }
     }
   }
 
-  if (options.immediate) void execute();
+  if (options.immediate) {
+    execute().catch((caught) => {
+      error.value = caught;
+    });
+  }
 
   return { data, error, pending, execute };
 }

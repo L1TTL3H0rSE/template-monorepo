@@ -6,8 +6,9 @@ func TestKeyIsStable(t *testing.T) {
 	// Ключ обязан быть стабильным между сборками и платформами: иначе после
 	// деплоя новая реплика возьмёт «другую» блокировку и начнёт работать
 	// параллельно со старой.
-	if Key("characters:reconcile") != Key("characters:reconcile") {
-		t.Fatal("одно имя должно давать один ключ")
+	const want int64 = 7593344862336838203
+	if got := Key("characters:reconcile"); got != want {
+		t.Fatalf("ключ изменился: got %d, want %d", got, want)
 	}
 }
 

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import {
   ApiClient,
   ApiError,
@@ -12,8 +13,10 @@ function mockFetch(response: {
   body?: unknown;
   reject?: unknown;
 }) {
-  const spy = vi.fn(async () => {
-    if (response.reject) throw response.reject;
+  const spy = vi.fn<typeof fetch>(async () => {
+    if (response.reject) {
+      throw response.reject;
+    }
 
     return {
       ok: (response.status ?? 200) < 400,

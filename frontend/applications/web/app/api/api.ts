@@ -1,7 +1,8 @@
 import { ApiClient } from "@starter/api/core";
-import type { WebApi } from "~/contracts/character";
+
 import { HttpCharacterAdapter } from "~/adapters/http/character-adapter";
 import { MockCharacterAdapter } from "~/adapters/mock/character-adapter";
+import type { WebApi } from "~/contracts/character";
 
 /**
  * Фабрика API приложения — единственное место, где выбирается реализация

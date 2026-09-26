@@ -21,7 +21,7 @@ import (
 // Ни один другой пакет не вызывает конструкторы соседних слоёв: хендлер не
 // создаёт сервис, сервис не открывает соединение с БД.
 func Run(ctx context.Context) error {
-	cfg, err := config.Load()
+	cfg, err := config.Load(ctx)
 	if err != nil {
 		return fmt.Errorf("config: %w", err)
 	}

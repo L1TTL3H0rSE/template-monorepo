@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { usePagination } from "../src/data/usePagination";
 
 describe("usePagination", () => {

@@ -52,7 +52,9 @@ function delay<T>(value: T): Promise<T> {
  * выглядел бы работающим ровно до переключения на настоящий бэкенд.
  */
 function abortableDelay<T>(value: T, signal?: AbortSignal): Promise<T> {
-  if (signal?.aborted) return Promise.reject(new MockAbortError());
+  if (signal?.aborted) {
+    return Promise.reject(new MockAbortError());
+  }
 
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => resolve(value), LATENCY_MS);
@@ -105,7 +107,9 @@ export class MockCharacterAdapter implements CharacterApi {
 
   async getById(id: string): Promise<Character> {
     const found = this.items.find((item) => item.id === id);
-    if (!found) throw new Error(`Персонаж ${id} не найден`);
+    if (!found) {
+      throw new Error(`Персонаж ${id} не найден`);
+    }
 
     return delay(found);
   }
@@ -131,7 +135,9 @@ export class MockCharacterAdapter implements CharacterApi {
 
   async remove(id: string): Promise<void> {
     const index = this.items.findIndex((item) => item.id === id);
-    if (index >= 0) this.items.splice(index, 1);
+    if (index >= 0) {
+      this.items.splice(index, 1);
+    }
 
     await delay(undefined);
   }

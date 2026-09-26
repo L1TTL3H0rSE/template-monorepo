@@ -32,7 +32,9 @@ export function useSearchQuery(options: SearchQueryOptions = {}): SearchQuery {
   let timer: ReturnType<typeof setTimeout> | undefined;
 
   const clearTimer = () => {
-    if (timer) clearTimeout(timer);
+    if (timer) {
+      clearTimeout(timer);
+    }
     timer = undefined;
   };
 
@@ -45,7 +47,9 @@ export function useSearchQuery(options: SearchQueryOptions = {}): SearchQuery {
       applied.value = "";
       return;
     }
-    if (normalized.length < minLength) return;
+    if (normalized.length < minLength) {
+      return;
+    }
 
     timer = setTimeout(() => {
       applied.value = normalized;

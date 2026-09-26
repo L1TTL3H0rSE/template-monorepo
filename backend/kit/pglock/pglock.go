@@ -29,7 +29,7 @@ func Key(name string) int64 {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(name))
 
-	return int64(h.Sum64())
+	return int64(h.Sum64()) //nolint:gosec // PostgreSQL принимает signed ключ; сохраняем все 64 бита FNV, включая знаковый.
 }
 
 // TryWithinTx выполняет fn внутри транзакции под advisory-блокировкой.

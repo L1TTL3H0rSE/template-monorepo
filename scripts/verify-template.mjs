@@ -75,7 +75,7 @@ const names = ["acme", "overlap"];
 const projects = names.map(name => ({ name, steps: Object.fromEntries([
   "copy", "initialize", "consistency", "project-tests", "install", "build:local", "lint", "typecheck", "test", "web-build", "storybook", "documented-dev",
   "go-kit-build", "go-kit-vet", "go-kit-test", "go-gotemplate-build", "go-gotemplate-vet", "go-gotemplate-test",
-  "documentation", "mock-browser", "postgres", "backend-build", "migrations", "api", "cleanup",
+  "repository-check", "go-lint-fixtures", "go-kit-lint", "go-gotemplate-lint", "documentation", "mock-browser", "postgres", "backend-build", "migrations", "api", "cleanup",
 ].map(step => [step, register(`${name}/${step}`)])) }));
 const cleanup = register("cleanup");
 let pnpm, chromium, sourceIdentity, sourceMetadata;
@@ -102,16 +102,16 @@ try {
     const [npm, prefix] = npmCommand();
     await run(npm, [...prefix, "ci", "--no-audit", "--no-fund"], { cwd: dir, log: join(output, "tools-install.log") });
     pnpm = join(dir, "node_modules/pnpm/bin/pnpm.cjs");
-    const version = await run(process.execPath, [pnpm, "--version"]);
+    const version = await run(process.execPath, [pnpm, "--version"], { cwd: join(workspace, "source/frontend") });
     assert.equal(`pnpm@${version}`, JSON.parse(readFileSync(join(workspace, "source/frontend/package.json"))).packageManager);
     // Playwright читает путь при импорте, а не при launch.
-    process.env.PLAYWRIGHT_BROWSERS_PATH = join(workspace, "browsers");
+    process.env.PLAYWRIGHT_BROWSERS_PATH ||= join(workspace, "browsers");
     ({ chromium } = await import(pathToFileURL(join(dir, "node_modules/playwright/index.mjs"))));
     return { pnpm: version };
   }, sourceOK && frontendEnabled);
   const browserOK = await stage(browser, async () => {
     await run(process.execPath, [join(workspace, "tools/node_modules/playwright/cli.js"), "install", "chromium"], {
-      env: { PLAYWRIGHT_BROWSERS_PATH: join(workspace, "browsers") }, log: join(output, "browser-install.log"),
+      env: { PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH }, log: join(output, "browser-install.log"),
     });
     try { const probe = await chromium.launch({ headless: true }); await probe.close(); }
     catch (error) {
@@ -177,13 +177,16 @@ try {
       await node(["scripts/check-template-residue.mjs"], { log: log("residue") });
     }, copied);
     const consistent = await stage(steps.consistency, () => consistency(dir, target), initialized);
+    await stage(steps["repository-check"], () => node(["scripts/check-repository.mjs"], { log: log("repository-check") }), consistent);
     await stage(steps["project-tests"], () => node(["--test", "scripts/*.test.mjs"], { log: log("project-tests") }), consistent);
     const installed = await stage(steps.install, () => front(["install", "--frozen-lockfile"], "install"), consistent && toolsOK);
     const built = await stage(steps["build:local"], () => front(["build:local"], "build-local"), installed);
     for (const step of ["lint", "typecheck", "test"]) await stage(steps[step], () => front([step], step), built);
     const web = await stage(steps["web-build"], () => front(["--filter", `${target.npmScope}/web`, "build"], "web-build"), built);
     await stage(steps.storybook, () => front(["build:storybook"], "storybook"), built);
+    await stage(steps["go-lint-fixtures"], () => node(["scripts/test-go-lint.mjs"], { log: log("go-lint-fixtures") }), consistent && goOK);
     for (const module of ["kit", "gotemplate"]) {
+      await stage(steps[`go-${module}-lint`], () => node(["scripts/lint-go.mjs", `backend/${module}`], { log: log(`go-${module}-lint`) }), consistent && goOK);
       for (const step of ["build", "vet", "test"]) await stage(steps[`go-${module}-${step}`], () => go(module, [step, "./..."], `go-${module}-${step}`), consistent && goOK);
     }
     await stage(steps.documentation, async () => {
@@ -281,6 +284,8 @@ function consistency(dir, target) {
   const config = readFileSync(join(dir, "frontend/applications/web/nuxt.config.ts"), "utf8");
   assert.ok(config.includes(`title: "${target.displayName}"`));
   assert.ok(config.includes(`${target.npmScope}/components/styles`));
+  assert.ok(existsSync(join(dir, "docs/conventions/optional-quality.md")));
+  assert.ok(readFileSync(join(dir, "backend/.golangci.yml"), "utf8").includes(`${target.goModulePrefix}/gotemplate`));
   const adoption = readFileSync(join(dir, "docs/decisions/ADOPTION.md"), "utf8");
   const rows = adoption.split("\n").filter(line => /^\| \[\d{4}\]/.test(line));
   assert.ok(rows.length > 0, "пустая таблица принятия ADR");

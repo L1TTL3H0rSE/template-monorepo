@@ -36,7 +36,7 @@ func TestEveryAPIRouteRequiresAuth(t *testing.T) {
 		t.Run(route.Method+" "+route.Path, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			// Запрос без доверенных заголовков гейтвея — неаутентифицированный.
-			router.ServeHTTP(recorder, httptest.NewRequest(route.Method, concretePath(route.Path), nil))
+			router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(), route.Method, concretePath(route.Path), nil))
 
 			if recorder.Code != http.StatusUnauthorized {
 				t.Fatalf("status = %d, want %d (маршрут не закрыт GatewayRequireAuth)",
@@ -53,7 +53,7 @@ func TestPublicRoutesAreReachable(t *testing.T) {
 	router := NewRouter(Deps{})
 
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/health", nil))
+	router.ServeHTTP(recorder, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/health", nil))
 
 	if recorder.Code != http.StatusOK {
 		t.Fatalf("GET /health status = %d, want %d", recorder.Code, http.StatusOK)

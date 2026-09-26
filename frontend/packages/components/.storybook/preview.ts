@@ -1,5 +1,6 @@
 import { setup, type Preview } from "@storybook/vue3-vite";
 import { createPinia } from "pinia";
+
 import * as components from "../src/components";
 import { breakpoints } from "../src/utils/_breakpoints";
 import "../src/assets/scss/global.scss";

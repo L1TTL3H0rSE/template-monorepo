@@ -46,10 +46,10 @@ func NewServer(cfg *kithttp.Config, deps Deps) infra.InfrastructureService {
 	}
 }
 
-func (s *HTTPService) Start(_ context.Context) error {
+func (s *HTTPService) Start(ctx context.Context) error {
 	// Listen отдельно от Serve: ошибка занятого порта должна упасть на старте,
 	// а не остаться внутри горутины.
-	listener, err := net.Listen("tcp", s.address)
+	listener, err := (&net.ListenConfig{}).Listen(ctx, "tcp", s.address)
 	if err != nil {
 		return fmt.Errorf("listen on %s: %w", s.address, err)
 	}

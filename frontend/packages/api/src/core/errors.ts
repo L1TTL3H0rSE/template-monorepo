@@ -74,8 +74,12 @@ export class RequestCancelledError extends Error {
  * один — значит иногда показать пользователю ложную ошибку.
  */
 export function isAbort(caught: unknown, signal?: AbortSignal): boolean {
-  if (signal?.aborted) return true;
-  if (caught instanceof RequestCancelledError) return true;
+  if (signal?.aborted) {
+    return true;
+  }
+  if (caught instanceof RequestCancelledError) {
+    return true;
+  }
 
   return (
     typeof caught === "object" &&

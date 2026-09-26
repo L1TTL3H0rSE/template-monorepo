@@ -34,7 +34,7 @@ func main() {
 		// Ненулевой код возврата обязателен: в compose и CI неуспешный засев
 		// должен останавливать подъём стенда, а не оставлять его наполовину
 		// заполненным.
-		os.Stderr.WriteString("bootstrap: " + err.Error() + "\n")
+		_, _ = os.Stderr.WriteString("bootstrap: " + err.Error() + "\n") // Завершаемся с ошибкой даже при недоступном stderr.
 		os.Exit(1)
 	}
 }

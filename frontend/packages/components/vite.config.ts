@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import type { UserConfig } from "vite";
+
 import vue from "@vitejs/plugin-vue";
+import type { UserConfig } from "vite";
 
 /**
  * Отпечаток сборки: хеш содержимого src.

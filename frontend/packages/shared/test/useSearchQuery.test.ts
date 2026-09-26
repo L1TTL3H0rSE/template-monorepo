@@ -1,5 +1,6 @@
-import { effectScope, nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { effectScope, nextTick } from "vue";
+
 import { useSearchQuery } from "../src/search/useSearchQuery";
 
 beforeEach(() => vi.useFakeTimers());

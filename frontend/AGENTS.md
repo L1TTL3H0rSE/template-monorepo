@@ -121,8 +121,8 @@ pnpm test
 `typecheck` обязателен: он ловит класс ошибок, невидимый для тестов — например
 разворачивание вложенных ref-ов Pinia.
 
-Покрытие считается только с `coverage.experimentalAstAwareRemapping: true`: без
-него `.vue`, который лишь импортировали, показывает ложные 100%. Тесты
+В Vitest 4 AST-aware remapping включён штатно; устаревшая опция
+`coverage.experimentalAstAwareRemapping` не нужна. Тесты
 приложения разделены на `test/unit/**` (Node) и `test/nuxt/**` (окружение
 Nuxt) — [`docs/frontend/testing.md`](../docs/frontend/testing.md).
 

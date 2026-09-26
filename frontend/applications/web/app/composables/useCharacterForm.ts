@@ -1,4 +1,5 @@
 import { useFormState } from "@starter/shared/forms";
+
 import type { CharacterDraft } from "~/contracts/character";
 
 /**
@@ -38,7 +39,9 @@ export function useCharacterForm(initial?: Partial<CharacterDraft>) {
   async function submit(
     handler: (draft: CharacterDraft) => Promise<void>,
   ): Promise<boolean> {
-    if (!validate()) return false;
+    if (!validate()) {
+      return false;
+    }
 
     try {
       return await form.submit(handler);

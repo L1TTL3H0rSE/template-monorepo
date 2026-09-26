@@ -43,10 +43,14 @@ export async function probeUntil(
   let delay = initialDelayMs;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
-    if (signal?.aborted) return false;
+    if (signal?.aborted) {
+      return false;
+    }
 
     try {
-      if (await check()) return true;
+      if (await check()) {
+        return true;
+      }
     } catch {
       // Сбой одной попытки не прекращает опрос: конвейер мог быть недоступен
       // ровно на время этого запроса. Бюджет попыток при этом расходуется,
@@ -54,7 +58,9 @@ export async function probeUntil(
     }
 
     // После последней попытки ждать бессмысленно.
-    if (attempt === attempts - 1) break;
+    if (attempt === attempts - 1) {
+      break;
+    }
 
     await sleep(delay, signal);
     delay = Math.min(delay * factor, maxDelayMs);

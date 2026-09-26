@@ -13,6 +13,7 @@
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Перед изменением границ, контрактов, слоёв |
 | [`conventions/naming.md`](conventions/naming.md) | Всегда: как называть файлы, типы, ветки |
 | [`conventions/checks.md`](conventions/checks.md) | Перед завершением задачи |
+| [`conventions/optional-quality.md`](conventions/optional-quality.md) | Выбор дополнительных проверок при инициализации и развитии проекта |
 | [`conventions/cross-platform.md`](conventions/cross-platform.md) | Генераторы, регистр имён, воспроизводимость |
 | [`conventions/documentation.md`](conventions/documentation.md) | Когда решение нужно зафиксировать |
 | [`decisions/`](decisions/) | Причины принятых сквозных решений |

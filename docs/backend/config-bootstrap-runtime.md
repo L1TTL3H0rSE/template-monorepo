@@ -67,7 +67,7 @@ func (c *Config) Validate() error
 
 ```go
 func Run(ctx context.Context) error {
-    cfg, err := config.Load()                                  // 1. конфигурация
+    cfg, err := config.Load(ctx)                               // 1. конфигурация
     foundations, err := bootstrap.Init(ctx, "gotemplate", cfg.Common)  // 2. общее
     log := foundations.Zap()
 

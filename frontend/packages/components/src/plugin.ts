@@ -1,4 +1,5 @@
 import type { Plugin } from "vue";
+
 import {
   componentsConfigKey,
   type ComponentsPluginOptions,

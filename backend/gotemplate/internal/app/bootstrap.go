@@ -38,7 +38,7 @@ var seedNames = []string{
 // Взаимное исключение — через advisory lock: при подъёме нескольких реплик
 // одновременно засев выполнит ровно одна, остальные корректно выйдут.
 func Bootstrap(ctx context.Context) error {
-	cfg, err := config.Load()
+	cfg, err := config.Load(ctx)
 	if err != nil {
 		return fmt.Errorf("config: %w", err)
 	}

@@ -9,6 +9,7 @@
 // на корневой элемент (см. docs/PROJECT_MEMORY.md, MEM-012).
 import type { Component, StyleValue } from "vue";
 import { computed, ref } from "vue";
+
 import { callMayBePromise } from "../utils/promises";
 
 export type ButtonSize = "large" | "medium" | "small";
@@ -58,7 +59,9 @@ const accessibleLabel = computed(
 );
 
 async function handleClick() {
-  if (props.disabled || isLoading.value) return;
+  if (props.disabled || isLoading.value) {
+    return;
+  }
 
   // Локальный loading на время промиса обработчика: без него двойной клик
   // отправляет запрос дважды, и каждый потребитель заводит свой ref.
@@ -73,7 +76,9 @@ async function handleClick() {
 }
 
 async function handleSideClick(event: MouseEvent) {
-  if (props.disabled || isLoading.value || !props.onSideClick) return;
+  if (props.disabled || isLoading.value || !props.onSideClick) {
+    return;
+  }
   event.stopPropagation();
 
   localLoading.value = true;

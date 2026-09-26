@@ -83,7 +83,7 @@ pnpm --filter @starter/components generate
 
 ```bash
 # backend, из каталога модуля
-go build ./... && go vet ./... && go test ./...
+go build ./... && go vet ./... && go test ./... && node ../../scripts/lint-go.mjs
 
 # frontend, из frontend/
 pnpm build:local && pnpm lint && pnpm typecheck && pnpm test

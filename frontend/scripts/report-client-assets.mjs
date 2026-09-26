@@ -111,19 +111,32 @@ function collect(directory, prefix = "") {
 function classify(file) {
   const extension = extname(file).toLowerCase();
 
-  if ([".js", ".mjs", ".cjs"].includes(extension)) return "js";
-  if (extension === ".css") return "css";
+  if ([".js", ".mjs", ".cjs"].includes(extension)) {
+    return "js";
+  }
+  if (extension === ".css") {
+    return "css";
+  }
   if ([".woff", ".woff2", ".ttf", ".otf", ".eot"].includes(extension)) {
     return "fonts";
   }
   if (
-    [".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".avif", ".ico"].includes(
-      extension,
-    )
+    [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".svg",
+      ".webp",
+      ".avif",
+      ".ico",
+    ].includes(extension)
   ) {
     return "images";
   }
-  if (extension === ".map") return "sourcemaps";
+  if (extension === ".map") {
+    return "sourcemaps";
+  }
 
   return "other";
 }

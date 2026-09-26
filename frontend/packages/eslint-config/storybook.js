@@ -1,4 +1,5 @@
 import storybook from "eslint-plugin-storybook";
+
 import vueConfig from "./vue.js";
 
 /**

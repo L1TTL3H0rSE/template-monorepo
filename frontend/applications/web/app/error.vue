@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { Button } from "@starter/components";
+
 import type { NuxtError } from "#app";
 
 const props = defineProps<{ error: NuxtError }>();

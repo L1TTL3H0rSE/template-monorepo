@@ -51,7 +51,9 @@ func TestNameMustBeMeaningful(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.unset {
-				os.Unsetenv("DB_NAME")
+				if err := os.Unsetenv("DB_NAME"); err != nil {
+					t.Fatal(err)
+				}
 			} else {
 				t.Setenv("DB_NAME", tc.value)
 			}
