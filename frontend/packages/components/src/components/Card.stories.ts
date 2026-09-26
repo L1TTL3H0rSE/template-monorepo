@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
+import { ref } from "vue";
 
+import Button from "./Button.vue";
 import Card from "./Card.vue";
 
 const meta: Meta<typeof Card> = {
@@ -55,7 +57,18 @@ export const WithFooter: Story = {
   }),
 };
 
-export const Interactive: Story = {
-  ...Elevated,
-  args: { interactive: true },
+export const WithAction: Story = {
+  render: (args) => ({
+    components: { Button, Card },
+    setup: () => ({ args, count: ref(0) }),
+    template: `
+      <Card v-bind="args" style="max-width:420px">
+        <p>Действие находится в отдельной кнопке: её можно активировать мышью, Enter или пробелом.</p>
+        <p role="status">Выполнено: {{ count }}</p>
+        <template #footer>
+          <Button label="Выполнить действие" @click="count++" />
+        </template>
+      </Card>
+    `,
+  }),
 };

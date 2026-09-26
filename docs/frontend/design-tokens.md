@@ -37,7 +37,7 @@ SCSS-переменные остаются там, где значение де�
 --text-*         текст: primary, secondary, placeholder, light, disabled
 --primary-*      основное действие: main, hover, active, light, contrast
 --secondary-*    вторичное действие
---success|warning|error|info-*   статусы: default, hover, active, contrast
+--success|warning|error|info-*   статусы: default, emphasis, hover, active, contrast
 --background-*   поверхности
 --divider-*      разделители
 --link-*         ссылки
@@ -46,6 +46,10 @@ SCSS-переменные остаются там, где значение де�
 
 Каждый интерактивный цвет имеет минимум три значения: `default`, `hover`,
 `active`. Компонент, у которого нет hover-состояния, выглядит сломанным.
+
+`emphasis` — контрастный статусный акцент для мелкого текста и заливки `Badge`:
+белый текст на акценте и акцентный текст на светлом фоне имеют контраст не ниже
+4.5:1. При смене темы проверяй обе пары; `default` сам по себе этого не гарантирует.
 
 ### Исключение: значения для `rgba()`
 
@@ -155,7 +159,8 @@ src/breakpoints.json
 
 | Файл | Токены |
 |---|---|
-| `effects.scss` | `--shadow-01` … `--shadow-04`, миксин `focus-ring()` |
+| `effects.scss` | `--shadow-01` … `--shadow-04`, реэкспорт `focus-ring()` |
+| `_effects-api.scss` | Миксин `focus-ring()`, без глобального CSS |
 | `variables.scss` | `$radius-*`, `$z-index-*` |
 | `transitions.scss` | `--transition-fast|base|slow`, `--transition-easing` |
 

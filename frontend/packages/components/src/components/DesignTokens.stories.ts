@@ -34,6 +34,12 @@ const COLOR_GROUPS = {
     "--error-default-color",
     "--info-default-color",
   ],
+  "Контрастные статусы": [
+    "--success-emphasis-color",
+    "--warning-emphasis-color",
+    "--error-emphasis-color",
+    "--info-emphasis-color",
+  ],
   Фон: [
     "--background-primary-color",
     "--background-secondary-color",

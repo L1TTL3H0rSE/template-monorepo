@@ -1,0 +1,6 @@
+// Видимый фокус нельзя убирать: без него интерфейс недоступен с клавиатуры.
+// Если стандартное кольцо мешает дизайну — меняется кольцо, а не его наличие.
+@mixin focus-ring($color: var(--primary-focus-visible-color)) {
+  outline: 2px solid #{$color};
+  outline-offset: 2px;
+}

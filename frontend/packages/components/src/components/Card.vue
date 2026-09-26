@@ -10,7 +10,6 @@ export type CardProps = {
   variant?: CardVariant;
   padding?: CardPadding;
   title?: string;
-  interactive?: boolean;
 };
 
 const props = withDefaults(defineProps<CardProps>(), {
@@ -20,12 +19,7 @@ const props = withDefaults(defineProps<CardProps>(), {
 </script>
 
 <template>
-  <section
-    class="card"
-    :variant="props.variant"
-    :padding="props.padding"
-    :interactive="props.interactive || undefined"
-  >
+  <section class="card" :variant="props.variant" :padding="props.padding">
     <header v-if="props.title || $slots.header" class="card__header">
       <slot name="header">
         <h5 class="card__title">{{ props.title }}</h5>
@@ -99,20 +93,6 @@ const props = withDefaults(defineProps<CardProps>(), {
   }
   &[padding="compact"] {
     --card-padding: var(--spacing-05);
-  }
-
-  &[interactive] {
-    cursor: pointer;
-    transition:
-      box-shadow var(--transition-base) var(--transition-easing),
-      transform var(--transition-base) var(--transition-easing);
-
-    @media (hover: hover) {
-      &:hover {
-        box-shadow: var(--shadow-03);
-        transform: translateY(-2px);
-      }
-    }
   }
 }
 </style>

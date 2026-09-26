@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<BadgeProps>(), { tone: "neutral" });
 
 // Карта тонов: цвет статуса задаётся один раз списком, а не шестью почти
 // одинаковыми блоками правил. Новый тон — одна строка здесь плюс значение в
-// union-типе BadgeTone; забыть одно из двух не даст TypeScript.
+// union-типе BadgeTone.
 $badge-tones: (
   "neutral": (
     "color": --secondary-main-color,
@@ -33,19 +33,19 @@ $badge-tones: (
     "background": --primary-light-color,
   ),
   "success": (
-    "color": --success-default-color,
+    "color": --success-emphasis-color,
     "background": --background-primary-color,
   ),
   "warning": (
-    "color": --warning-default-color,
+    "color": --warning-emphasis-color,
     "background": --background-primary-color,
   ),
   "error": (
-    "color": --error-default-color,
+    "color": --error-emphasis-color,
     "background": --background-primary-color,
   ),
   "info": (
-    "color": --info-default-color,
+    "color": --info-emphasis-color,
     "background": --background-secondary-color,
   ),
 );
