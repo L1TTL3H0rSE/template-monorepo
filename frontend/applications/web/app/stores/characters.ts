@@ -7,7 +7,7 @@ import { isCancelled } from "@starter/api/core";
 import { useOptimisticList, usePagination } from "@starter/shared/data";
 import { useSearchQuery } from "@starter/shared/search";
 import { defineStore } from "pinia";
-import { computed, onScopeDispose, ref, watch } from "vue";
+import { computed, onScopeDispose, ref, shallowReactive, watch } from "vue";
 
 import { useApi } from "~/api/api";
 import type { Character, CharacterDraft } from "~/contracts/character";
@@ -28,8 +28,13 @@ export const useCharactersStore = defineStore("characters", () => {
 
   const serverItems = ref<Character[]>([]);
   const pending = ref(false);
-  const error = ref<string | null>(null);
-  const syncing = ref(false);
+  const loadError = ref<string | null>(null);
+  const syncErrors = shallowReactive(new Map<string, string>());
+  const reconciles = shallowReactive(new Map<string, AbortController>());
+  const syncing = computed(() => reconciles.size > 0);
+  const error = computed(
+    () => loadError.value ?? Array.from(syncErrors.values()).at(-1) ?? null,
+  );
 
   const pagination = usePagination(12);
   const search = useSearchQuery({ minLength: 2 });
@@ -49,8 +54,12 @@ export const useCharactersStore = defineStore("characters", () => {
   // разрешившийся промис.
   let loadGeneration = 0;
   let loadController: AbortController | undefined;
+  let disposed = false;
 
   async function load(): Promise<void> {
+    if (disposed) {
+      return;
+    }
     const generation = ++loadGeneration;
 
     loadController?.abort();
@@ -58,7 +67,7 @@ export const useCharactersStore = defineStore("characters", () => {
     loadController = controller;
 
     pending.value = true;
-    error.value = null;
+    loadError.value = null;
 
     try {
       const page = await api.characters.search(
@@ -88,7 +97,7 @@ export const useCharactersStore = defineStore("characters", () => {
         return;
       }
 
-      error.value =
+      loadError.value =
         caught instanceof Error
           ? caught.message
           : "Не удалось загрузить список";
@@ -131,63 +140,111 @@ export const useCharactersStore = defineStore("characters", () => {
    * появлением в выдаче стоит асинхронный конвейер, и немедленный запрос
    * почти всегда возвращает список БЕЗ изменения.
    */
-  async function reconcile(
+  function reconcile(
     key: string,
-    isConsistent: () => Promise<boolean>,
-  ): Promise<void> {
-    syncing.value = true;
-    try {
-      await optimistic.confirm(key, isConsistent);
+    isConsistent: (signal: AbortSignal) => Promise<boolean>,
+  ): void {
+    reconciles.get(key)?.abort();
+    const controller = new AbortController();
+    reconciles.set(key, controller);
+    syncErrors.delete(key);
+    const isCurrent = () => !disposed && reconciles.get(key) === controller;
+    async function confirmAndRefresh(): Promise<void> {
+      const consistent = await optimistic.confirm(
+        key,
+        () => isConsistent(controller.signal),
+        { signal: controller.signal },
+      );
+      if (!isCurrent()) {
+        return;
+      }
       await load();
-    } finally {
-      syncing.value = false;
+      if (isCurrent() && !consistent) {
+        syncErrors.set(
+          key,
+          "Изменение сохранено, но обновление списка пока не подтверждено. Обновите список позже.",
+        );
+      }
     }
+
+    confirmAndRefresh()
+      .catch((caught: unknown) => {
+        if (isCurrent()) {
+          syncErrors.set(
+            key,
+            caught instanceof Error ? caught.message : String(caught),
+          );
+        }
+      })
+      .finally(() => {
+        if (reconciles.get(key) === controller) {
+          reconciles.delete(key);
+        }
+      });
   }
 
   async function create(draft: CharacterDraft): Promise<Character> {
+    if (disposed) {
+      throw new Error("Стор списка уже закрыт");
+    }
     const created = await api.characters.create(draft);
+    if (disposed) {
+      return created;
+    }
 
     // Запись показывается немедленно — до того, как она появится в выдаче.
     optimistic.trackAdd(created);
     pagination.setTotal(pagination.total.value + 1);
 
     // Опрос идёт фоном: интерфейс не блокируется ожиданием конвейера.
-    reconcile(created.id, async () => {
-      const page = await api.characters.search({
-        query: created.name,
-        limit: 20,
-        offset: 0,
-      });
+    reconcile(created.id, async (signal) => {
+      const page = await api.characters.search(
+        { query: created.name, limit: 20, offset: 0 },
+        { signal },
+      );
 
       return page.items.some((item) => item.id === created.id);
-    }).catch(reportBackgroundError);
+    });
 
     return created;
   }
 
   async function remove(id: string): Promise<void> {
+    if (disposed) {
+      return;
+    }
     await api.characters.remove(id);
+    if (disposed) {
+      return;
+    }
 
     optimistic.trackRemove(id);
     pagination.setTotal(Math.max(0, pagination.total.value - 1));
 
-    reconcile(id, async () => {
-      const page = await api.characters.search({
-        limit: pagination.perPage.value,
-        offset: pagination.offset.value,
-      });
+    reconcile(id, async (signal) => {
+      const page = await api.characters.search(
+        { limit: pagination.perPage.value, offset: pagination.offset.value },
+        { signal },
+      );
 
       return !page.items.some((item) => item.id === id);
-    }).catch(reportBackgroundError);
-  }
-
-  function reportBackgroundError(caught: unknown) {
-    error.value = caught instanceof Error ? caught.message : String(caught);
+    });
   }
 
   // Уход со страницы не должен оставлять чтение в полёте: ответ уже никому не
   // нужен, а соединение занято.
-  onScopeDispose(() => loadController?.abort());
+  onScopeDispose(() => {
+    disposed = true;
+    loadGeneration += 1;
+    loadController?.abort();
+    for (const controller of reconciles.values()) {
+      controller.abort();
+    }
+    reconciles.clear();
+    syncErrors.clear();
+    optimistic.reset();
+    pending.value = false;
+  });
 
   return {
     items,

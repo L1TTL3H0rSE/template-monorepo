@@ -56,6 +56,7 @@ export function useOptimisticList<T>(
   // для generic-контейнера это ломает типизацию без всякой пользы.
   const added = shallowReactive(new Map<string, T>());
   const removed = shallowReactive(new Set<string>());
+  const revisions = new Map<string, symbol>();
 
   function merge(serverItems: readonly T[]): T[] {
     const serverKeys = new Set(serverItems.map(getKey));
@@ -74,6 +75,7 @@ export function useOptimisticList<T>(
   function settle(key: string): void {
     added.delete(key);
     removed.delete(key);
+    revisions.delete(key);
   }
 
   async function confirm(
@@ -81,12 +83,15 @@ export function useOptimisticList<T>(
     check: () => Promise<boolean>,
     options?: ProbeOptions,
   ): Promise<boolean> {
+    const revision = revisions.get(key);
     const consistent = await probeUntil(check, options);
 
     // Оверлей снимается в ЛЮБОМ исходе. Оставленный навсегда, он показывает
     // запись, которой на сервере может уже не быть, — и расходится с
     // реальностью тем сильнее, чем дольше открыта вкладка.
-    settle(key);
+    if (revision !== undefined && revisions.get(key) === revision) {
+      settle(key);
+    }
 
     return consistent;
   }
@@ -94,15 +99,21 @@ export function useOptimisticList<T>(
   return {
     merge,
     trackAdd: (item) => {
-      added.set(getKey(item), item);
+      const key = getKey(item);
+      revisions.set(key, Symbol());
+      removed.delete(key);
+      added.set(key, item);
     },
     trackRemove: (key) => {
+      revisions.set(key, Symbol());
+      added.delete(key);
       removed.add(key);
     },
     settle,
     reset: () => {
       added.clear();
       removed.clear();
+      revisions.clear();
     },
     confirm,
     hasPending: () => added.size > 0 || removed.size > 0,

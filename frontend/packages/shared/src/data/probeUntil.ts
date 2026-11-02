@@ -49,12 +49,16 @@ export async function probeUntil(
 
     try {
       if (await check()) {
-        return true;
+        return !signal?.aborted;
       }
     } catch {
       // Сбой одной попытки не прекращает опрос: конвейер мог быть недоступен
       // ровно на время этого запроса. Бюджет попыток при этом расходуется,
       // поэтому недоступность не даёт бесконечного цикла.
+    }
+
+    if (signal?.aborted) {
+      return false;
     }
 
     // После последней попытки ждать бессмысленно.
@@ -71,17 +75,16 @@ export async function probeUntil(
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
-    const timer = setTimeout(resolve, ms);
-
-    // Таймер снимается при отмене: иначе прерванный опрос продолжает держать
-    // отложенный вызов после ухода со страницы.
-    signal?.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(timer);
-        resolve();
-      },
-      { once: true },
-    );
+    if (signal?.aborted) {
+      resolve();
+      return;
+    }
+    const finish = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", finish);
+      resolve();
+    };
+    const timer = setTimeout(finish, ms);
+    signal?.addEventListener("abort", finish, { once: true });
   });
 }

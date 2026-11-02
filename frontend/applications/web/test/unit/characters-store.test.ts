@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
 import type {
@@ -112,7 +112,164 @@ beforeEach(() => {
   api.honorAbort = true;
 });
 
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
+
+describe("useCharactersStore: подтверждение мутаций", () => {
+  it("новая принятая запись снимает timeout своего ключа, возникший во время ожидания API", async () => {
+    vi.useFakeTimers();
+    const created = page(["one"]).items[0]!;
+    vi.spyOn(api, "create").mockResolvedValue(created);
+    let finishRemove!: () => void;
+    vi.spyOn(api, "remove").mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRemove = resolve;
+        }),
+    );
+    const store = useCharactersStore();
+    await store.create({ name: created.name });
+    const removing = store.remove(created.id);
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      api.calls.at(-1)!.resolve(page([]));
+      await vi.advanceTimersByTimeAsync(attempt < 4 ? 150 * 2 ** attempt : 0);
+    }
+    api.calls.at(-1)!.resolve(page([]));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.error).toContain("не подтверждено");
+
+    finishRemove();
+    await removing;
+    expect(store.error).toBeNull();
+    expect(store.syncing).toBe(true);
+    api.calls.at(-1)!.resolve(page([]));
+    await vi.advanceTimersByTimeAsync(0);
+    api.calls.at(-1)!.resolve(page([]));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.error).toBeNull();
+    expect(store.syncing).toBe(false);
+    expect(store.items).toEqual([]);
+    store.$dispose();
+  });
+
+  it("сообщает об исчерпании бюджета и сохраняет его после независимого успеха", async () => {
+    vi.useFakeTimers();
+    const first = page(["one"]).items[0]!;
+    const second = page(["two"]).items[0]!;
+    vi.spyOn(api, "create")
+      .mockResolvedValueOnce(first)
+      .mockResolvedValueOnce(second);
+    const store = useCharactersStore();
+    await store.create({ name: "one" });
+    await store.create({ name: "two" });
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const call = api.calls
+        .filter((entry) => entry.params.query === "one")
+        .at(-1)!;
+      call.resolve(page([]));
+      await vi.advanceTimersByTimeAsync(attempt < 4 ? 150 * 2 ** attempt : 0);
+    }
+    api.calls.at(-1)!.resolve(page([]));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.error).toContain("не подтверждено");
+    expect(store.syncing).toBe(true);
+
+    api.calls
+      .find((entry) => entry.params.query === "two")!
+      .resolve({ items: [second], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    api.calls.at(-1)!.resolve({ items: [second], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.syncing).toBe(false);
+    expect(store.error).toContain("не подтверждено");
+    expect(store.items).toEqual([second]);
+    store.$dispose();
+  });
+
+  it("успешное подтверждение снимает syncing после обновления списка", async () => {
+    vi.useFakeTimers();
+    const created = page(["one"]).items[0]!;
+    vi.spyOn(api, "create").mockResolvedValue(created);
+    const store = useCharactersStore();
+    await store.create({ name: created.name });
+    expect(store.items).toEqual([created]);
+    expect(store.syncing).toBe(true);
+    expect(api.calls[0]!.signal).toBeInstanceOf(AbortSignal);
+    api.calls[0]!.resolve({ items: [created], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.syncing).toBe(true);
+    api.calls[1]!.resolve({ items: [created], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.syncing).toBe(false);
+    expect(store.error).toBeNull();
+    store.$dispose();
+  });
+
+  it("dispose отменяет probe и запрещает поздний refresh даже без поддержки abort", async () => {
+    vi.useFakeTimers();
+    api.honorAbort = false;
+    const created = page(["one"]).items[0]!;
+    vi.spyOn(api, "create").mockResolvedValue(created);
+    const store = useCharactersStore();
+    await store.create({ name: created.name });
+    store.$dispose();
+    expect(api.calls[0]!.signal?.aborted).toBe(true);
+    api.calls[0]!.resolve({ items: [created], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(api.calls).toHaveLength(1);
+    expect(store.syncing).toBe(false);
+    expect(store.error).toBeNull();
+    expect(store.items).toEqual([]);
+  });
+
+  it("замена операции того же ключа не позволяет старому finally снять syncing", async () => {
+    vi.useFakeTimers();
+    api.honorAbort = false;
+    const old = page(["old"]).items[0]!;
+    const fresh = { ...old, name: "fresh" };
+    vi.spyOn(api, "create")
+      .mockResolvedValueOnce(old)
+      .mockResolvedValueOnce(fresh);
+    const store = useCharactersStore();
+    await store.create({ name: old.name });
+    await store.create({ name: fresh.name });
+    expect(api.calls[0]!.signal?.aborted).toBe(true);
+    api.calls[0]!.resolve({ items: [old], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(store.items).toEqual([fresh]);
+    expect(store.syncing).toBe(true);
+    expect(api.calls).toHaveLength(2);
+    store.$dispose();
+    api.calls[1]!.resolve({ items: [fresh], total: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+  });
+});
+
 describe("useCharactersStore: интерактивное чтение", () => {
+  it.each(["resolve", "reject"] as const)(
+    "dispose блокирует поздний %s чтения",
+    async (outcome) => {
+      api.honorAbort = false;
+      const store = useCharactersStore();
+      const run = store.load();
+      store.$dispose();
+      if (outcome === "resolve") {
+        api.calls[0]!.resolve(page(["late"]));
+      } else {
+        api.calls[0]!.reject(new Error("late"));
+      }
+      await run;
+      await store.load();
+      expect(store.items).toEqual([]);
+      expect(store.error).toBeNull();
+      expect(store.pending).toBe(false);
+      expect(api.calls).toHaveLength(1);
+    },
+  );
+
   /**
    * Проверка ВТОРОГО рубежа — счётчика поколений (MEM-022).
    *

@@ -3,6 +3,35 @@ import { describe, expect, it, vi } from "vitest";
 import { probeUntil } from "../src/data/probeUntil";
 
 describe("probeUntil", () => {
+  it("отмена во время check не подтверждает поздний успех", async () => {
+    const controller = new AbortController();
+    let resolve!: (value: boolean) => void;
+    const check = vi.fn(
+      () =>
+        new Promise<boolean>((done) => {
+          resolve = done;
+        }),
+    );
+    const run = probeUntil(check, { signal: controller.signal });
+    controller.abort();
+    resolve(true);
+    expect(await run).toBe(false);
+    expect(check).toHaveBeenCalledTimes(1);
+  });
+
+  it("после обычного ожидания не сохраняет abort listener", async () => {
+    const controller = new AbortController();
+    const add = vi.spyOn(controller.signal, "addEventListener");
+    const remove = vi.spyOn(controller.signal, "removeEventListener");
+    await probeUntil(async () => false, {
+      signal: controller.signal,
+      attempts: 2,
+      initialDelayMs: 0,
+    });
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalledWith("abort", add.mock.calls[0]![1]);
+  });
+
   it("возвращает true на первой успешной проверке", async () => {
     const check = vi.fn(async () => true);
 

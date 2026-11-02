@@ -7,6 +7,66 @@ type Item = { id: string; name: string };
 const key = (item: Item) => item.id;
 
 describe("useOptimisticList", () => {
+  it.each([false, true])(
+    "старый confirm не снимает новую поправку после reset=%s",
+    async (reset) => {
+      const list = useOptimisticList<Item>(key);
+      let resolve!: (value: boolean) => void;
+      list.trackAdd({ id: "1", name: "old" });
+      const old = list.confirm(
+        "1",
+        () =>
+          new Promise<boolean>((done) => {
+            resolve = done;
+          }),
+      );
+      if (reset) {
+        list.reset();
+      }
+      list.trackAdd({ id: "1", name: "new" });
+      resolve(true);
+      await old;
+      expect(list.merge([])).toEqual([{ id: "1", name: "new" }]);
+      expect(list.hasPending()).toBe(true);
+      await list.confirm("1", async () => true);
+      expect(list.hasPending()).toBe(false);
+    },
+  );
+
+  it("новое добавление заменяет удаление того же ключа", () => {
+    const list = useOptimisticList<Item>(key);
+    list.trackRemove("1");
+    list.trackAdd({ id: "1", name: "new" });
+    expect(list.merge([])).toEqual([{ id: "1", name: "new" }]);
+  });
+
+  it("подтверждение одного ключа сохраняет поправку другого", async () => {
+    const list = useOptimisticList<Item>(key);
+    list.trackAdd({ id: "1", name: "one" });
+    list.trackAdd({ id: "2", name: "two" });
+    await list.confirm("1", async () => false, { attempts: 1 });
+    expect(list.merge([])).toEqual([{ id: "2", name: "two" }]);
+  });
+
+  it("старый confirm не снимает удаление, заменившее добавление", async () => {
+    const list = useOptimisticList<Item>(key);
+    const item = { id: "1", name: "one" };
+    let resolve!: (value: boolean) => void;
+    list.trackAdd(item);
+    const old = list.confirm(
+      "1",
+      () =>
+        new Promise<boolean>((done) => {
+          resolve = done;
+        }),
+    );
+    list.trackRemove("1");
+    resolve(true);
+    await old;
+    expect(list.merge([item])).toEqual([]);
+    expect(list.hasPending()).toBe(true);
+  });
+
   it("показывает созданную запись до её появления в выдаче", () => {
     const list = useOptimisticList<Item>(key);
     const server: Item[] = [{ id: "1", name: "Эйра" }];
